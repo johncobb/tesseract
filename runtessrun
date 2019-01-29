@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# TODO: This file is a work in progress
+
+echo "Converting pdf to tiff..."
+# pdf to tiff
+convert -density 300 pdf/example.pdf -depth 8 -strip -background white -alpha off out/tiff/out.tiff
+
+# extract vin
+#convert out.tiff -crop 400x1800+10+200 col1.jpg
+# extract current principal
+#convert out.tiff -crop 200x1800+1500+200 col2.jpg
+
+echo "Splicing intermediate file..."
+convert out/tiff/out.tiff -crop 400x1800+10+200 out/tiff/column1.tiff
+convert out/tiff/out.tiff -crop 200x1800+1500+200 out/tiff/column2.tiff
+
+
+
+echo "Tesseract GoBabyGo..."
+
+
+# run tesseract with default parameters
+#tesseract -l eng out/tiff/column1.tiff out/txt/out
+
+# run tesseract with custom parameters
+# oem 1 (nerual nets LSTM only)
+# psm 3 (page segmentation mode)  PSM_AUTO
+tesseract -l eng --oem 1 --psm 3 out/tiff/column1.tiff out/txt/out
+
+# log the output to terminal
+#cat out/txt/out.txt
+
+
+
+echo "Wrinting hocr file (bounding coordinates)..."
+tesseract -l eng out/tiff/column1.tiff out/hocr/result hocr
+echo "End of output."
