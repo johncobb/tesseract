@@ -1,38 +1,31 @@
 
-## mac os install via brew
+## Mac OS install via brew
 `brew install tesseract`
 `brew install imagemagick`
 `brew install gs`
 
-## ubuntu linux install via apt
+## Ubuntu/Linux install via apt
 `sudo apt install tesseract-ocr`
 `sudo apt install imagemagick`
 
-## running commands
+## Test tesseract install by issuing the following command to list options
 `tesseract -h` # list options
+
 ## pdf to tiff
 `convert -density 300 pdf/example.pdf -depth 8 -strip -background white -alpha off out/tiff/out.tiff`
-## pdf to png
-`convert -density 300 pdf/example.pdf -depth 8 -strip -background white -alpha off out/png/out.png`
-## pdf to jpeg
-`convert -density 300 pdf/example.pdf -depth 8 -strip -background white -alpha off out/jpeg/out.jpeg`
 
-## example commands
-`convert -density 300 pdf/chase_kia.pdf -depth 8 -strip -background white -alpha off out/tiff/out.tiff`
-## ocr the intermediate image file to text
-`tesseract -l eng out/tiff/out.tiff out/txt/out`
-## ocr the intermediate image file to hocr (bounding boxes)
-`tesseract -l eng out/tiff/out.tiff result hocr`
+## crop one column of data
+`convert out/tiff/out.tiff -crop 400x1800+10+200 out/tiff/column1.tiff`
 
-## cropping image
-## convert image_name -crop pixelsX x pixelsY + pixelOffsetX + pixelOffsetY outputfile
-`convert out.tiff -crop 600x1800+100+200 cropped.jpg`
+`# run tesseract with custom parameters`
+`# oem 1 (nerual nets LSTM only)`
+`# psm 3 (page segmentation mode)  PSM_AUTO`
+`tesseract -l eng --oem 1 --psm 3 out/tiff/column1.tiff out/txt/out`
 
-## extract vin
-`convert out.tiff -crop 400x1800+10+200 column1.jpg`
-## extract current principal
-`convert out.tiff -crop 200x1800+1500+200 column2.jpg`
+## Write hocr file (bounding coordinates)..."
+`tesseract -l eng out/tiff/column1.tiff out/hocr/result hocr`
 
-## Resouces
+
+## Resources
 ### https://github.com/tesseract-ocr/tesseract/wiki/Command-Line-Usage
 ### https://github.com/tesseract-ocr/tesseract/wiki/TrainingTesseract-4.00

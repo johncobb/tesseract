@@ -33,6 +33,6 @@ tesseract -l eng --oem 1 --psm 3 out/tiff/column1.tiff out/txt/out
 
 
 
-echo "Wrinting hocr file (bounding coordinates)..."
+echo "Writing hocr file (bounding coordinates)..."
 tesseract -l eng out/tiff/column1.tiff out/hocr/result hocr
 echo "End of output."
