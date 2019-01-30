@@ -35,7 +35,7 @@ convert out/tiff/out.tiff -crop 400x1800+10+200 out/tiff/column1.tiff
 tesseract -l eng --oem 1 --psm 3 out/tiff/column1.tiff out/txt/out
 ```
 
-### Write hocr file (bounding coordinates)..."
+### Write hocr file (bounding coordinates)
 ```console
 tesseract -l eng out/tiff/column1.tiff out/hocr/result hocr
 ```
