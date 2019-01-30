@@ -17,10 +17,12 @@
 ## crop one column of data
 `convert out/tiff/out.tiff -crop 400x1800+10+200 out/tiff/column1.tiff`
 
-`# run tesseract with custom parameters`
-`# oem 1 (nerual nets LSTM only)`
-`# psm 3 (page segmentation mode)  PSM_AUTO`
-`tesseract -l eng --oem 1 --psm 3 out/tiff/column1.tiff out/txt/out`
+```console
+# run tesseract with custom parameters
+# oem 1 (nerual nets LSTM only)
+# psm 3 (page segmentation mode)  PSM_AUTO
+tesseract -l eng --oem 1 --psm 3 out/tiff/column1.tiff out/txt/out
+```
 
 ## Write hocr file (bounding coordinates)..."
 `tesseract -l eng out/tiff/column1.tiff out/hocr/result hocr`
