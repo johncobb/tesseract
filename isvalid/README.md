@@ -10,4 +10,6 @@ pip install -r requirements.txt
 # run extract.py file_name
 python extract.py out.txt
 
+# stop virtual session
+deactivate
 ```
