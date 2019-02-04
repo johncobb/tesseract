@@ -1,5 +1,5 @@
 
-#### Mac OS install via brew
+### Mac OS install via brew
 ```console
 brew install tesseract
 brew install imagemagick
