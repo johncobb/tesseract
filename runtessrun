@@ -12,10 +12,13 @@ convert -density 300 pdf/example.pdf -depth 8 -strip -background white -alpha of
 #convert out.tiff -crop 200x1800+1500+200 col2.jpg
 
 echo "Splicing intermediate file..."
-convert out/tiff/out.tiff -crop 400x1800+10+200 out/tiff/column1.tiff
-convert out/tiff/out.tiff -crop 200x1800+1500+200 out/tiff/column2.tiff
+#convert out/tiff/out.tiff -crop 400x2550+10+200 out/tiff/column1.tiff
+#convert out/tiff/out.tiff -crop 200x2550+1500+200 out/tiff/column2.tiff
+#convert out/tiff/column1.tiff out/tiff/column2.tiff +append +repage out/tiff/combined.tiff
 
-
+convert out/tiff/out.tiff -crop 400x2550+10+200 out/jpeg/col1.jpeg
+convert out/tiff/out.tiff -crop 200x2550+1500+200 out/jpeg/col2.jpeg
+convert out/jpeg/col1-4.jpeg out/jpeg/col2-4.jpeg +append out/jpeg/combined.jpeg
 
 echo "Tesseract GoBabyGo..."
 
@@ -26,13 +29,20 @@ echo "Tesseract GoBabyGo..."
 # run tesseract with custom parameters
 # oem 1 (nerual nets LSTM only)
 # psm 3 (page segmentation mode)  PSM_AUTO
-tesseract -l eng --oem 1 --psm 3 out/tiff/column1.tiff out/txt/out
+#tesseract -l eng --oem 1 --psm 3 out/tiff/column1.tiff out/txt/out
+tesseract -l eng --oem 1 --psm 3 out/jpeg/combined.jpeg out/txt/out
 
 # log the output to terminal
 #cat out/txt/out.txt
 
+# run the parser from the local (virtualenv folder)
+# determine path issuing 'which python' command while environment is activated
+# add '> tmp_file' to end of command to output to file
+/Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out.txt
+
 
 
 echo "Writing hocr file (bounding coordinates)..."
-tesseract -l eng out/tiff/column1.tiff out/hocr/result hocr
+# tesseract -l eng out/tiff/column1.tiff out/hocr/result hocr
+tesseract -l eng out/jpeg/combined.jpeg out/hocr/result hocr
 echo "End of output."

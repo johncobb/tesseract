@@ -3,12 +3,14 @@
 ```console
 pip install --user virutalenv
 
+# create env with python3
+virtualenv -p python3 env
 # activate environment
 . env/bin/activate
 pip install -r requirements.txt
 
-# run extract.py file_name
-python extract.py out.txt
+# extract file data
+python3 modules/run_test.py out.txt > tmp_file
 
 # stop virtual session
 deactivate
