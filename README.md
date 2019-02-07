@@ -47,8 +47,8 @@ tesseract -l eng out/tiff/column1.tiff out/hocr/result hocr
 ```
 
 ### runtessrun script
-#### Prior to running the runtessrun script navigate to the parsers folder and setup the virutal environment.
-#### Follow the instructions in the parsers README.md. Finally, modify the path labeled (TODO: Modify Path) so that the scripts reference the correct path.
+Prior to running the runtessrun script navigate to the parsers folder and setup the virutal environment.
+Follow the instructions in the parsers README.md. Finally, modify the path labeled (TODO: Modify Path) so that the scripts reference the correct path.
 ```console
 . runtessrun
 ```
