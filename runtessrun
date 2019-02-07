@@ -38,6 +38,11 @@ tesseract -l eng --oem 1 --psm 3 out/jpeg/combined.jpeg out/txt/out
 # run the parser from the local (virtualenv folder)
 # determine path issuing 'which python' command while environment is activated
 # add '> tmp_file' to end of command to output to file
+# TODO: make sure to replace path below with the path to your virtual environment
+# This can be done by issuing the following commands. Results may vary based upon your environment
+# activate environment: '. env/bin/activate'
+# @username: which python
+# /username/johncobb/dev/tesseract/parsers/env/bin/python
 /Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out.txt
 
 
