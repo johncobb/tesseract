@@ -43,6 +43,7 @@ tesseract -l eng --oem 1 --psm 3 out/jpeg/combined.jpeg out/txt/out
 # activate environment: '. env/bin/activate'
 # @username: which python
 # /Users/username/tesseract/parsers/env/bin/python
+# TODO: Modify Path
 /Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out.txt
 
 

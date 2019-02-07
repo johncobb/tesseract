@@ -12,9 +12,12 @@ sudo apt install tesseract-ocr
 sudo apt install imagemagick
 ```
 
-### Test tesseract install by issuing the following command to list options
+### Test tesseract, imagemagick, and gs installs by issuing the following commands:
 ```console
-tesseract -h # list options
+tesseract --version
+convert -version # imagemagick version
+gs --version # ghostscript version
+
 ```
 
 ### pdf to tiff
@@ -42,6 +45,14 @@ tesseract -l eng --oem 1 --psm 3 out/tiff/column1.tiff out/txt/out
 ```console
 tesseract -l eng out/tiff/column1.tiff out/hocr/result hocr
 ```
+
+### runtessrun script
+#### Prior to running the runtessrun script navigate to the parsers folder and setup the virutal environment.
+#### Follow the instructions in the parsers README.md. Finally, modify the path labeled (TODO: Modify Path) so that the scripts reference the correct path.
+```console
+. runtessrun
+```
+
 
 ### Resources
 #### https://github.com/tesseract-ocr/tesseract/wiki/Command-Line-Usage
