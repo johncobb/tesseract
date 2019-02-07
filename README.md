@@ -22,9 +22,12 @@ tesseract -h # list options
 convert -density 300 pdf/example.pdf -depth 8 -strip -background white -alpha off out/tiff/out.tiff
 ```
 
-### crop one column of data
+### crop two columns of data and append into one combined image
 ```console
-convert out/tiff/out.tiff -crop 400x1800+10+200 out/tiff/column1.tiff
+convert out/tiff/out.tiff -crop 400x2550+10+200 out/jpeg/col1.jpeg
+convert out/tiff/out.tiff -crop 200x2550+1500+200 out/jpeg/col2.jpeg
+# below we combine page 4 from col1-4.jpeg and col2-4.jpeg into combined.jpeg
+convert out/jpeg/col1-4.jpeg out/jpeg/col2-4.jpeg +append out/jpeg/combined.jpeg
 ```
 
 ### Run tesseract on file

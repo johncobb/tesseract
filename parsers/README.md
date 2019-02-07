@@ -1,7 +1,7 @@
 ### Install Virtual Environment
 #### RTFM: https://virtualenv.pypa.io/en/stable/installation/
 ```console
-pip install --user virutalenv
+pip install --user virtualenv
 
 # create env with python3
 virtualenv -p python3 env
