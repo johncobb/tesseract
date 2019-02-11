@@ -26,9 +26,12 @@ convert -density 300 pdf/example.pdf -depth 8 -strip -background white -alpha of
 ```
 
 ### crop two columns of data and append into one combined image
+Tip: make sure to pad the filename with leading zeros so that the files enumerate
+in the correct order when we go to splice later on. ie: col1-%03d.jpeg
 ```console
-convert out/tiff/out.tiff -crop 400x2550+10+200 out/jpeg/col1.jpeg
-convert out/tiff/out.tiff -crop 200x2550+1500+200 out/jpeg/col2.jpeg
+
+convert out/tiff/out.tiff -crop 400x2550+10+200 out/jpeg/col1-%03d.jpeg
+convert out/tiff/out.tiff -crop 200x2550+1500+200 out/jpeg/col2-%03d.jpeg
 # below we combine page 4 from col1-4.jpeg and col2-4.jpeg into combined.jpeg
 convert out/jpeg/col1-4.jpeg out/jpeg/col2-4.jpeg +append out/jpeg/combined.jpeg
 ```

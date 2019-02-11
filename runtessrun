@@ -16,8 +16,8 @@ echo "Splicing intermediate file..."
 #convert out/tiff/out.tiff -crop 200x2550+1500+200 out/tiff/column2.tiff
 #convert out/tiff/column1.tiff out/tiff/column2.tiff +append +repage out/tiff/combined.tiff
 
-convert out/tiff/out.tiff -crop 400x2550+10+200 out/jpeg/col1.jpeg
-convert out/tiff/out.tiff -crop 200x2550+1500+200 out/jpeg/col2.jpeg
+convert out/tiff/out.tiff -crop 400x2550+10+200 out/jpeg/col1-%03d.jpeg
+convert out/tiff/out.tiff -crop 200x2550+1500+200 out/jpeg/col2-%03d.jpeg
 convert out/jpeg/col1-4.jpeg out/jpeg/col2-4.jpeg +append out/jpeg/combined.jpeg
 
 echo "Tesseract GoBabyGo..."

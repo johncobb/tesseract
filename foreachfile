@@ -1,0 +1,8 @@
+#!/bin/bash
+i=0
+for image_file in out/jpeg/col1-*.jpeg
+do
+  echo 'col1-'$i'.jpeg' '->' 'col2-'$i'.jpeg'
+  echo 
+  let i++
+done
