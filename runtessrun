@@ -18,7 +18,16 @@ echo "Splicing intermediate file..."
 
 convert out/tiff/out.tiff -crop 400x2550+10+200 out/jpeg/col1-%03d.jpeg
 convert out/tiff/out.tiff -crop 200x2550+1500+200 out/jpeg/col2-%03d.jpeg
-convert out/jpeg/col1-4.jpeg out/jpeg/col2-4.jpeg +append out/jpeg/combined.jpeg
+
+echo "Appending columns 1-2"
+
+let i=0
+for column1 in out/jpeg/col1-*.jpeg
+do
+    spacer=$(printf "%03d" $i)
+    convert out/jpeg/col1-$spacer.jpeg out/jpeg/col2-$spacer.jpeg +append out/jpeg/combined-$spacer.jpeg
+    let i++
+done
 
 echo "Tesseract GoBabyGo..."
 
