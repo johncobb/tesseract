@@ -8,6 +8,17 @@ from parser_base import ParserAbstract
 
 class Kia(ParserAbstract):
 
+    def removeLowerCase(self, data):
+        allUpper = ""
+
+        for c in data:
+            if c.isnumeric():
+                allUpper += c
+
+                continue
+            if (c.isupper()):
+                allUpper += c
+
     def parse(self, file):
 
         # Per ISO 3779 valid prefixs for World Manufacturer Identifier
@@ -67,6 +78,7 @@ class Kia(ParserAbstract):
                             print(record, " invalid", current_principal)
                             #print(record)
                         #invalidFile.write(recordData + "\t" + vinResult[2] + "\n")
+
 
         
         #print("Total: ", current_principal_total)
