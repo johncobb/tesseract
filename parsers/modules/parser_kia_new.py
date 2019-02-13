@@ -33,16 +33,20 @@ class Kia(ParserAbstract):
 
             if len(row) > 1:
 
-                wmivds = row[0]
-                serial = row[1]
-                current_principal = row[2]
+
 
                 if len(row[0]) == 11  and len(row[1]) == 6:
+                    wmivds = row[0]
+                    serial = row[1]
+                    current_principal = row[2]
                     self.parseReord(wmivds, serial, current_principal)
+                '''
+                TODO: implement len check on row[0] and row[1]
                 else:
                     wmivds = self.removeLowerCase(wmivds)
                     serial = self.removeLowerCase(serial)
                     self.parseReord(wmivds, serial, current_principal)
+                '''
                     
 
     def parseReord(self, wmivds, serial, current_principal):
