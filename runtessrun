@@ -41,6 +41,14 @@ echo "Tesseract GoBabyGo..."
 #tesseract -l eng --oem 1 --psm 3 out/tiff/column1.tiff out/txt/out
 tesseract -l eng --oem 1 --psm 3 out/jpeg/combined.jpeg out/txt/out
 
+let i=0
+for column1 in out/jpeg/col1-*.jpeg
+do
+    spacer=$(printf "%03d" $i)
+    tesseract -l eng --oem 1 --psm 3 out/jpeg/combined-$spacer.jpeg out/txt/out-$spacer
+    let i++
+done
+
 # log the output to terminal
 #cat out/txt/out.txt
 
@@ -53,7 +61,15 @@ tesseract -l eng --oem 1 --psm 3 out/jpeg/combined.jpeg out/txt/out
 # @username: which python
 # /Users/username/tesseract/parsers/env/bin/python
 # TODO: Modify Path
-/Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out.txt
+# /Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out.txt
+
+let i=0
+for column1 in out/txt/out-*.txt
+do
+    spacer=$(printf "%03d" $i)
+    /Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out-$spacer.txt >> final.txt
+    let i++
+done
 
 
 

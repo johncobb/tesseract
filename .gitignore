@@ -2,3 +2,4 @@ env/
 tmp/
 out/tiff/
 .DS_Store
+*.pyc

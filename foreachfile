@@ -1,8 +1,10 @@
 #!/bin/bash
 i=0
+foo=''
 for image_file in out/jpeg/col1-*.jpeg
 do
-  echo 'col1-'$i'.jpeg' '->' 'col2-'$i'.jpeg'
-  echo 
+  #echo 'col1-'$i'.jpeg' '->' 'col2-'$i'.jpeg'
+  let foo=$(printf "%03d" $i)
+  echo "${foo}"
   let i++
 done
