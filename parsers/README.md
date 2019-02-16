@@ -1,5 +1,5 @@
 ## Installing a Virtual Environment
-#### Refereance : https://virtualenv.pypa.io/en/stable/installation/
+#### Reference : https://virtualenv.pypa.io/en/stable/installation/
 
 #### Prerequisites:
 
