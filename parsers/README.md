@@ -4,7 +4,9 @@
 #### Prerequisites:
 
 Installing PiP
+
 `curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py`
+
 `python get-pip.py --user`
 
 ### Install virtualenv  
@@ -16,7 +18,7 @@ Create a folder in tesseract/parsers to house the virtual environment (env). Als
 `virtualenv -p python3 env`
 
 
-`
+
 Activate environment  
 
 `. env/bin/activate` 
