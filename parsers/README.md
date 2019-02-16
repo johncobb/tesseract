@@ -9,6 +9,11 @@ Create a folder in tesseract/parsers to house the virtual environment (env). Als
 
 `virtualenv -p python3 env`
 
+Installing PiP
+`
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py --user
+`
 Activate environment  
 
 `. env/bin/activate` 
