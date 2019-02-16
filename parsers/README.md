@@ -1,13 +1,23 @@
 ## Installing a Virtual Environment
-#### Refereance : https://virtualenv.pypa.io/en/stable/installation/
+#### Reference : https://virtualenv.pypa.io/en/stable/installation/
 
-Install virtualenv  
+#### Prerequisites:
+
+Installing PiP
+
+`curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py`
+
+`python get-pip.py --user`
+
+### Install virtualenv  
 
 `pip install --user virtualenv`
 
 Create a folder in tesseract/parsers to house the virtual environment (env). Also, specify this project is using python3  
 
 `virtualenv -p python3 env`
+
+
 
 Activate environment  
 
