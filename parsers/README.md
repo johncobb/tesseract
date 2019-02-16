@@ -1,7 +1,7 @@
 ## Installing a Virtual Environment
 #### Refereance : https://virtualenv.pypa.io/en/stable/installation/
 
-###Pip Prerequisite
+### Pip Prerequisite
 
 Installing PiP
 `
@@ -9,7 +9,7 @@ curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python get-pip.py --user
 `
 
-###Install virtualenv  
+### Install virtualenv  
 
 `pip install --user virtualenv`
 
