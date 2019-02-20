@@ -1,14 +1,44 @@
-CHASE er ne c
+CHASE (er inec
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
 
 Full Serial Number Current
 Year Make Moc Principal
-
- 
-
 Customer Collateral Type:
-
- 
-
 2019 KIA SOL
 KNDJP3A59K7 912308 22,257.00
 2019 KIA SOL
@@ -18,22 +48,13 @@ KNDJP3A52K7 913381 0.00
 2019 KIA SOL
 KNDJN2A20K7 913854 18,980.00
 2019 KIA SOL
-
 Total : KIA 6,680,749.00
-
- 
-
- 
-
 Customer Collateral Type:
-
- 
-
 3KPFL4A72JE 220477 19,772.00
 2018 KIA FOF
 3KPFL4A71JE 231051 19,772.00
 2018 KIA FOF
-5XXGT4L31JG 252438 23,734.00
+5XXGT4L31JUG 252438 23,734.00
 2018 KIA OPT
 5XXGT4L34JG 259772 23,786.00
 2018 KIA OPT
@@ -45,6 +66,5 @@ Customer Collateral Type:
 2018 KIA OPT
 5XXGT4L30JG 272261 23,786.00
 2018 KIA OPT
-
 5XXGT4L36JG 272524 23,786.00
 

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # TODO: This file is a work in progress
+# Marker 'TODO:' highlights locations were user may need to make changes to fit their environment/folder structure
 
 echo "Converting pdf to tiff..."
 # pdf to tiff
@@ -39,13 +40,16 @@ echo "Tesseract GoBabyGo..."
 # oem 1 (nerual nets LSTM only)
 # psm 3 (page segmentation mode)  PSM_AUTO
 #tesseract -l eng --oem 1 --psm 3 out/tiff/column1.tiff out/txt/out
-tesseract -l eng --oem 1 --psm 3 out/jpeg/combined.jpeg out/txt/out
+#tesseract -l eng --oem 1 --psm 3 out/jpeg/combined.jpeg out/txt/out
+
 
 let i=0
 for column1 in out/jpeg/col1-*.jpeg
 do
+    #echo "tesseract to text loops $i"
     spacer=$(printf "%03d" $i)
-    tesseract -l eng --oem 1 --psm 3 out/jpeg/combined-$spacer.jpeg out/txt/out-$spacer
+    convert -units PixelsPerInch out/jpeg/combined-$spacer.jpeg -resample 300 out/jpeg/combinedv2-$spacer.jpeg
+    tesseract -l eng --oem 1 --psm 3 out/jpeg/combinedv2-$spacer.jpeg out/txt/out-$spacer
     let i++
 done
 
@@ -63,17 +67,48 @@ done
 # TODO: Modify Path
 # /Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out.txt
 
+
+
 let i=0
-for column1 in out/txt/out-*.txt
+for files in out/txt/out-*.txt
 do
     spacer=$(printf "%03d" $i)
-    /Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out-$spacer.txt >> final.txt
+    #TODO: Change file path to suit your folder structure
+    #/Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out-$spacer.txt >> final.txt
+    /Users/cph/Documents/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out-$spacer.txt >> out/txt/final.txt
+    #echo "number of loops thru adding txt files to final.txt $i"
     let i++
 done
 
 
 
-echo "Writing hocr file (bounding coordinates)..."
-# tesseract -l eng out/tiff/column1.tiff out/hocr/result hocr
-tesseract -l eng out/jpeg/combined.jpeg out/hocr/result hocr
+
+
+# echo "Writing hocr file (bounding coordinates)..."
+# # tesseract -l eng out/tiff/column1.tiff out/hocr/result hocr
+
+let i=0
+for column1 in out/jpeg/col1-*.jpeg
+do
+    spacer=$(printf "%03d" $i)
+    #tesseract -l eng --oem 1 --psm 3 out/jpeg/combined-$spacer.jpeg out/txt/out-$spacer                     <-- Original used for txt output 
+    convert -units PixelsPerInch out/jpeg/combined-$spacer.jpeg -resample 300 out/jpeg/combined-$spacer.jpeg
+    tesseract -l eng --oem 1 --psm 3 out/jpeg/combined-$spacer.jpeg out/tsv/result-$spacer tsv                # <-- Use combinedv2?
+    let i++
+done
+
+
+let i=0
+for files in out/tsv/result-*.tsv
+do
+    spacer=$(printf "%03d" $i)
+    #/Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out-$spacer.txt >> final.txt
+    echo "Number of times thru the out/tsv file $i"
+    #/Users/cph/Documents/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py 
+    cat out/tsv/result-$spacer.tsv >> out/tsv/finalTSV.tsv
+    let i++
+done
+
+#tesseract -l eng out/jpeg/combined.jpeg out/hocr/result hocr
+
 echo "End of output."

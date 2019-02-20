@@ -1,36 +1,54 @@
-CHASE er ne c
+CHASE (er inec
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
 
 Full Serial Number Current
 Year Make Moc Principal
-
- 
-
 Customer Collateral Type:
-
- 
-
 KNAE55LC7J6 028495 49,984.00
-2018 KIA STit
+2018 KIA STIt
 5XYPK4A53KG 448403 44,281.00
-2019 KIA SOF
+2019 ~ KIA SOF
 5XYPK4A57KG 499435 39,513.00
-2019 KIA SOF
-
-Total: DEMO AUTOMOBII = 133,778.00
-
- 
-
- 
-
+2019 ~ KIA SOF
+Total: DEMO AUTOMOBII 133,778.00
 Customer Collateral Type:
-
- 
-
 KNAS34J62K6 009872 60,514.00
 2019 KIA K90:
 KNAS24J64K6 010282 0.00
 2019 KIA
-
 3KPF24AD6KE 011320 0.00
 2019 KIA FOF
 3KPF34ADXKE 012757 21,976.00
@@ -48,4 +66,6 @@ KNAE55LC9J6 020172 47,742.00
 KNAE55LC7J6 028495 0.00
 
 2018 KIA STit
+
+ 
 

@@ -1,14 +1,40 @@
-CHASE er ne c
+CHASE (er inec
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
 
 Full Serial Number Current
 Year Make Moc Principal
-
- 
-
 Customer Collateral Type:
-
- 
-
 2019 KIA OPT
 5XXGT4L3XKG 328577 25,153.00
 2019 KIA OPT
@@ -34,9 +60,11 @@ KNDME5C13J6 403652 0.00
 2018 KIA SEL
 KNDMC5C14J6 404265 0.00
 2018 KIA SEL
-5XYPG4A39JG 412455 31,003.00
+5XYPG4A39JUG 412455 31,003.00
 2018 KIA SOF
 5XYPG4A31JG 413437 30,636.00
 
 2018 KIA SOF
+
+ 
 
