@@ -2,6 +2,9 @@
 # Project files to ignore
 tmp/
 out/tiff/*.tiff
+out/jpeg/*.jpeg
+out/png/*.png
+out/txt/*.txt
 out/tsv/*.tsv
 .DS_Store
 
