@@ -15,3 +15,6 @@ KNAE55LC9J6020172 47,742.00 323944.00
 3KPF24AD8KE026336 19,593.00 365136.00
 KNAE55LC7J6028495 0.00 365136.00
 Total:  365136.00
+level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext
+level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext
+level	page_num	block_num	par_num	line_num	word_num	left	top	width	height	conf	text
