@@ -1,8 +1,0 @@
-level	page_num	block_num	par_num	line_num	word_num	left	top	width	height	conf	text
-1	1	0	0	0	0	0	0	600	2350	-1	
-2	1	1	0	0	0	400	1076	200	29	-1	
-3	1	1	1	0	0	400	1076	200	29	-1	
-4	1	1	1	1	0	400	1076	200	29	-1	
-5	1	1	1	1	1	400	1082	12	16	86	s
-5	1	1	1	1	2	423	1076	66	29	93	Page
-5	1	1	1	1	3	501	1076	99	23	26	Intentio!
