@@ -70,10 +70,15 @@ if [ "$parameter" == "tsv" ]; then
         done
 
         let i=0
+        # write the header
+        echo -e "level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext" >> out/tsv/finalTSV.tsv
         for files in out/tsv/result-*.tsv
         do
             spacer=$(printf "%03d" $i)
-            cat out/tsv/result-$spacer.tsv >> out/tsv/finalTSV.tsv
+            #cat out/tsv/result-$spacer.tsv >> out/tsv/finalTSV.tsv
+            
+            # start output on line two so that we skip the header in each file
+            tail -n +2 out/tsv/result-$spacer.tsv >> out/tsv/finalTSV.tsv
             let i++
         done
 else
