@@ -1,5 +1,20 @@
-env/
+# Ignore suggestions taken from https://github.com/github/gitignore/blob/master/Python.gitignore
+# Project files to ignore
 tmp/
 out/tiff/*.tiff
+out/tsv/*.tsv
 .DS_Store
-*.pyc
+
+# Ignored byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# pyenv
+.python-version
+
+# Environments
+.env
+.venv
+env/
+venv/

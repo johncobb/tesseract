@@ -1,14 +1,26 @@
 #!/bin/bash
 
 # TODO: This file is a work in progress
+# Marker 'TODO:' highlights locations were user may need to make changes to fit their environment/folder structure
+
+#Checks if user specified the tsv output with "-tsv". Default is txt output
+if [ "$1" == "-tsv" ]; 
+then
+    parameter="tsv"
+    echo "Option tsv selected"
+else
+    parameter=""
+    echo "Default txt selected"
+fi
+
 
 echo "Converting pdf to tiff..."
 # pdf to tiff
 convert -density 300 pdf/example.pdf -depth 8 -strip -background white -alpha off out/tiff/out.tiff
 
-# extract vin
+#extract vin
 #convert out.tiff -crop 400x1800+10+200 col1.jpg
-# extract current principal
+#extract current principal
 #convert out.tiff -crop 200x1800+1500+200 col2.jpg
 
 echo "Splicing intermediate file..."
@@ -39,41 +51,65 @@ echo "Tesseract GoBabyGo..."
 # oem 1 (nerual nets LSTM only)
 # psm 3 (page segmentation mode)  PSM_AUTO
 #tesseract -l eng --oem 1 --psm 3 out/tiff/column1.tiff out/txt/out
-tesseract -l eng --oem 1 --psm 3 out/jpeg/combined.jpeg out/txt/out
+#tesseract -l eng --oem 1 --psm 3 out/jpeg/combined.jpeg out/txt/out
 
-let i=0
-for column1 in out/jpeg/col1-*.jpeg
-do
-    spacer=$(printf "%03d" $i)
-    tesseract -l eng --oem 1 --psm 3 out/jpeg/combined-$spacer.jpeg out/txt/out-$spacer
-    let i++
-done
+echo "Parameter check"
 
-# log the output to terminal
-#cat out/txt/out.txt
+#command line of ". runtessrun -tsv" will output the tsv files
+#command line of ". runtessrun" will output the txt files
+if [ "$parameter" == "tsv" ]; then
+    echo "Option tsv selected"
 
-# run the parser from the local (virtualenv folder)
-# determine path issuing 'which python' command while environment is activated
-# add '> tmp_file' to end of command to output to file
-# TODO: make sure to replace path below with the path to your virtual environment
-# This can be done by issuing the following commands. Results may vary based upon your environment
-# activate environment: '. env/bin/activate'
-# @username: which python
-# /Users/username/tesseract/parsers/env/bin/python
-# TODO: Modify Path
-# /Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out.txt
+        let i=0
+        for column1 in out/jpeg/col1-*.jpeg
+        do
+            spacer=$(printf "%03d" $i)
+            convert -units PixelsPerInch out/jpeg/combined-$spacer.jpeg -resample 300 out/jpeg/combinedv2-$spacer.jpeg
+            tesseract -l eng --oem 1 --psm 3 out/jpeg/combinedv2-$spacer.jpeg out/tsv/result-$spacer tsv
+            let i++
+        done
 
-let i=0
-for column1 in out/txt/out-*.txt
-do
-    spacer=$(printf "%03d" $i)
-    /Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out-$spacer.txt >> final.txt
-    let i++
-done
+        let i=0
+        for files in out/tsv/result-*.tsv
+        do
+            spacer=$(printf "%03d" $i)
+            cat out/tsv/result-$spacer.tsv >> out/tsv/finalTSV.tsv
+            let i++
+        done
+else
+    echo "Default option txt selected"
 
+        let i=0
+        for column1 in out/jpeg/col1-*.jpeg
+        do
+            spacer=$(printf "%03d" $i)
+            convert -units PixelsPerInch out/jpeg/combined-$spacer.jpeg -resample 300 out/jpeg/combinedv2-$spacer.jpeg
+            tesseract -l eng --oem 1 --psm 3 out/jpeg/combinedv2-$spacer.jpeg out/txt/out-$spacer
+            let i++
+        done
+        # log the output to terminal
+        # cat out/txt/out.txt
 
+        # run the parser from the local (virtualenv folder)
+        # determine path issuing 'which python' command while environment is activated
+        # add '> tmp_file' to end of command to output to file
+        # TODO: make sure to replace path below with the path to your virtual environment
+        # This can be done by issuing the following commands. Results may vary based upon your environment
+        # activate environment: '. env/bin/activate'
+        # @username: which python
+        # /Users/username/tesseract/parsers/env/bin/python
+        
+        # TODO: Modify Path
+        # /Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out.txt
+        let i=0
+        for files in out/txt/out-*.txt
+        do
+            spacer=$(printf "%03d" $i)
+            #TODO: Change file path to suit your folder structure
+            #/Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out-$spacer.txt >> final.txt
+            /Users/cph/Documents/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out-$spacer.txt >> out/txt/final.txt
+            let i++
+        done      
+fi
 
-echo "Writing hocr file (bounding coordinates)..."
-# tesseract -l eng out/tiff/column1.tiff out/hocr/result hocr
-tesseract -l eng out/jpeg/combined.jpeg out/hocr/result hocr
 echo "End of output."
