@@ -10,7 +10,7 @@ then
     echo "Option tsv selected"
 else
     parameter=""
-    echo "No parameter recognized"
+    echo "Default txt selected"
 fi
 
 
