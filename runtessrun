@@ -7,10 +7,10 @@
 if [ "$1" == "-tsv" ]; 
 then
     parameter="tsv"
-    echo "tsv selected"
+    echo "Option tsv selected"
 else
     parameter=""
-    echo "no parameter"
+    echo "No parameter recognized"
 fi
 
 
