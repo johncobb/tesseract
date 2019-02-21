@@ -3,6 +3,17 @@
 # TODO: This file is a work in progress
 # Marker 'TODO:' highlights locations were user may need to make changes to fit their environment/folder structure
 
+#Checks if user specified the tsv output with "-tsv". Default is txt output
+if [ "$1" == "-tsv" ]; 
+then
+    parameter="tsv"
+    echo "tsv selected"
+else
+    parameter=""
+    echo "no parameter"
+fi
+
+
 echo "Converting pdf to tiff..."
 # pdf to tiff
 convert -density 300 pdf/example.pdf -depth 8 -strip -background white -alpha off out/tiff/out.tiff
@@ -42,11 +53,11 @@ echo "Tesseract GoBabyGo..."
 #tesseract -l eng --oem 1 --psm 3 out/tiff/column1.tiff out/txt/out
 #tesseract -l eng --oem 1 --psm 3 out/jpeg/combined.jpeg out/txt/out
 
-echo "Paremeter check"
+echo "Parameter check"
 
 #command line of ". runtessrun -tsv" will output the tsv files
 #command line of ". runtessrun" will output the txt files
-if [ "$1" == "-tsv" ]; then
+if [ "$parameter" == "tsv" ]; then
     echo "Option tsv selected"
 
         let i=0
