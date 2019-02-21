@@ -1,5 +1,6 @@
 env/
 tmp/
-out/tiff/
+out/tiff/*.tiff
 .DS_Store
 *.pyc
+out/tsv/*.tsv
