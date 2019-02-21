@@ -18,21 +18,13 @@ echo "Converting pdf to tiff..."
 # pdf to tiff
 convert -density 300 pdf/example.pdf -depth 8 -strip -background white -alpha off out/tiff/out.tiff
 
-#extract vin
-#convert out.tiff -crop 400x1800+10+200 col1.jpg
-#extract current principal
-#convert out.tiff -crop 200x1800+1500+200 col2.jpg
 
-echo "Splicing intermediate file..."
-#convert out/tiff/out.tiff -crop 400x2550+10+200 out/tiff/column1.tiff
-#convert out/tiff/out.tiff -crop 200x2550+1500+200 out/tiff/column2.tiff
-#convert out/tiff/column1.tiff out/tiff/column2.tiff +append +repage out/tiff/combined.tiff
-
+echo "Exctracting columns 1-2..."
 convert out/tiff/out.tiff -crop 400x2550+10+200 out/jpeg/col1-%03d.jpeg
 convert out/tiff/out.tiff -crop 200x2550+1500+200 out/jpeg/col2-%03d.jpeg
+echo "complete."
 
-echo "Appending columns 1-2"
-
+echo "Appending columns 1-2..."
 let i=0
 for column1 in out/jpeg/col1-*.jpeg
 do
@@ -40,12 +32,9 @@ do
     convert out/jpeg/col1-$spacer.jpeg out/jpeg/col2-$spacer.jpeg +append out/jpeg/combined-$spacer.jpeg
     let i++
 done
+echo "complete."
 
 echo "Tesseract GoBabyGo..."
-
-
-# run tesseract with default parameters
-#tesseract -l eng out/tiff/column1.tiff out/txt/out
 
 # run tesseract with custom parameters
 # oem 1 (nerual nets LSTM only)
@@ -92,8 +81,6 @@ else
             tesseract -l eng --oem 1 --psm 3 out/jpeg/combinedv2-$spacer.jpeg out/txt/out-$spacer
             let i++
         done
-        # log the output to terminal
-        # cat out/txt/out.txt
 
         # run the parser from the local (virtualenv folder)
         # determine path issuing 'which python' command while environment is activated
@@ -104,15 +91,12 @@ else
         # @username: which python
         # /Users/username/tesseract/parsers/env/bin/python
         
-        # TODO: Modify Path
-        # /Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out.txt
         let i=0
         for files in out/txt/out-*.txt
         do
             spacer=$(printf "%03d" $i)
-            #TODO: Change file path to suit your folder structure
+            # run python command to merge all files into final
             $(pwd)/parsers/env/bin/python parsers/modules/run_test.py out/txt/out-$spacer.txt >> out/txt/final.txt
-            #/Users/cph/Documents/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out-$spacer.txt >> out/txt/final.txt
             let i++
         done      
 fi
