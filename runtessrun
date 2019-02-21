@@ -106,8 +106,8 @@ else
         do
             spacer=$(printf "%03d" $i)
             #TODO: Change file path to suit your folder structure
-            #/Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out-$spacer.txt >> final.txt
-            /Users/cph/Documents/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out-$spacer.txt >> out/txt/final.txt
+            /Users/johncobb/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out-$spacer.txt >> final.txt
+            #/Users/cph/Documents/dev/tesseract/parsers/env/bin/python parsers/modules/run_test.py out/txt/out-$spacer.txt >> out/txt/final.txt
             let i++
         done      
 fi
