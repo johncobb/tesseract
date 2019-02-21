@@ -3,7 +3,6 @@
 tmp/
 out/tiff/*.tiff
 out/tsv/*.tsv
-
 .DS_Store
 
 # Ignored byte-compiled / optimized / DLL files
