@@ -1,4 +1,4 @@
-import csv, json
+import csv, json, getopt
 from lxml import etree, html
 import os,sys,inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -6,8 +6,29 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0,parentdir)
 import modules.util as util
 
+path = "/Users/tylermeserve/Documents/Tesseract/tesseract/out/tsv/"
+
+def argParse(opts, args):
+    global path
+    for opt, arg in opts:
+        optc = opt.lower()
+        if optc in ['--path', '-p']:
+            path = arg
+
 if __name__ == "__main__":
-    out_path = "/Users/tylermeserve/Documents/Tesseract/tesseract/out/"
+
+    if not sys.argv[1:]:
+        print("Error: please provide arugments.")
+        sys.exit()
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'p', ['--path'])
+    except getopt.GetoptError:
+        print("Error: invalid argument.")
+        sys.exit(2)
+    
+    if not opts and not args:
+        print("Error, no parameters provided")
+        sys.exit()
 
     slash = ""
     if sys.platform == "linux" or sys.platform == "linux2" or sys.platform == "darwin":
@@ -17,84 +38,124 @@ if __name__ == "__main__":
 
     vinbal = []
     toAppend = ""
+    filename_prefix = ""
+    pagenum_list = []
+    for filename in os.listdir(path):
+        if not filename_prefix:
+            file_extension = "." + filename.split('.')[-1]
+            filename_prefix = filename.split('-')[0]
 
-    with open(out_path + 'tsv/result-009.tsv') as tsvfile:
-        reader = csv.DictReader(tsvfile, dialect='excel-tab')
+        page_num = filename.split('-')[-1].split('.')[0]
 
-    # hocr_file_path = out_path + "/hocr/result.hocr"
-    # hocr_file_name = hocr_file_path.split('/')[-1]
-    # doc = html.parse(hocr_file_path)
+        if not page_num:
+            continue
+        
+        if page_num.isdigit():
+            pagenum = int(page_num)
+            pagenum_list.append(page_num)
 
-    # for element in doc.iter('*'):
-        for row in reader:
-            text = row['text']
-            if not text:
-                continue
-            if not text.strip():
-                continue
-            bbox = "{0} {1} {2} {3}; wconf {4}".format(row['left'], row['top'], row['width'], row['height'], row['conf'])
-            if len(text) == 6:
-                toAppend += text
-                if text.find('.') > -1 or text.find(',') > -1:
-                    toAppend = ""
+    pagenum_list.sort()
+
+    filename_list = []
+    for pagenum in pagenum_list:
+        filename_list.append(filename_prefix + "-" + pagenum + file_extension)
+    
+    for item in filename_list:
+        
+        with open(path + item, "r") as tsvfile:
+            reader = csv.DictReader(tsvfile, dialect='excel-tab')
+            pagenum = int(item.split('.')[0].split('-')[-1])
+            tsv_file_name = item.split(".")[0].split('-')[0]
+        # hocr_file_path = path + "/hocr/result.hocr"
+        # hocr_file_name = hocr_file_path.split('/')[-1]
+        # doc = html.parse(hocr_file_path)
+            vinbaldict = {
+                "vin": "",
+                "balance": "",
+                "bbox": "",
+                "conf": []
+            }
+        # for element in doc.iter('*'):
+            for row in reader:
+                conf = row['conf']
+                text = row['text']
+                if not text:
                     continue
-                if len(toAppend) == 17:
-                    vinbal.append([toAppend, bbox])
+                if not text.strip():
+                    continue
+                bbox = "{0} {1} {2} {3}".format(row['left'], row['top'], row['width'], row['height'])
+                if len(text) == 6:
+                    toAppend += text
+                    if text.find('.') > -1 or text.find(',') > -1:
+                        toAppend = ""
+                        continue
+                    if len(toAppend) == 17:
+                        vinbaldict['vin'] = toAppend
+                        vinbaldict['bbox'] = bbox
+                        vinbaldict['conf'].append(conf)
+                        vinbal.append(vinbaldict)
+                        vinbaldict = {
+                            "vin": "",
+                            "balance": "",
+                            "bbox": "",
+                            "conf": []
+                        }
+                    else:
+                        toAppend = ""
+                elif len(text) == 11:
+                    toAppend = text
+                    vinbaldict['conf'].append(conf)
+                elif text.find(',') > -1 or text.find('.') > -1:
+                    if text.replace(',', "").replace('.', '').isdigit():
+                        dig = float(text.replace(',', ''))
+                        if not vinbal:
+                            continue
+                        
+                        if not len(vinbal[-1]['conf']) == 2:
+                            continue
+                        vinbal[-1]['balance'] = text
+                        vinbal[-1]['conf'].append(conf)
+    
+            data = []
+            for vin in vinbal:
+                tojson = {}
+                print("The vin is: {0}\nThe balance is: {1}\nThe bbox is: {2}".format(vin["vin"], vin["balance"], vin["bbox"]))
+                valid = util.ValidateVIN(vin['vin'])
+                bboxsplit = vin['bbox'].split(' ')
+
+                tojson['page'] = str(pagenum)
+                tojson['vin'] = vin["vin"]
+                tojson['balance'] = vin["balance"]
+
+                if valid[0]:
+                    print("Vin is valid!\n\n")
+                    tojson['valid'] = True
                 else:
-                    toAppend = ""
-            elif len(text) == 11:
-                toAppend = text
-            elif text.find(',') > -1 or text.find('.') > -1:
-                if text.replace(',', "").replace('.', '').isdigit():
-                    dig = float(text.replace(',', ''))
-                    if not vinbal:
-                        continue
-                    lastindex = vinbal[-1]
-                    if len(lastindex) == 3:# or dig <= 1000:
-                        continue
-                    vinbal[-1].append(text)
-                    print(vinbal[-1])
-                    print("passed")
-    
-    data = []
-    for vin in vinbal:
-        tojson = {}
-        print("The vin is: {0}\nThe balance is: {1}\nThe bbox is: {2}".format(vin[0], vin[2], vin[1]))
-        valid = util.ValidateVIN(vin[0])
+                    print("Vin isn't valid!\n\n")
+                    tojson['valid'] = True
+                
+                tojson['x1'] = bboxsplit[0]
+                tojson['x2'] = bboxsplit[2]
+                tojson['y1'] = bboxsplit[1]
+                tojson['y2'] = bboxsplit[3]
+                # tojson['x_wconf'] = bboxsplit[1].split(' ')[1]
+                x = 1
+                for item in vin['conf']:
+                    tojson['conf_{0}'.format(str(x))] = item
+                    x += 1
+                
+                data.append(tojson)
+            
+            json_data = json.dumps(data, indent=4)
 
-        bboxsplit = vin[1].split(';')
-        bboxsplit[1] = bboxsplit[1].rstrip()
-        bboxsplit2 = bboxsplit[0].split(' ')
+            if not os.path.isdir(os.getcwd() + slash + 'json'):
+                os.mkdir(os.getcwd() + slash + 'json')
 
-        tojson['vin'] = vin[0]
-        tojson['balance'] = vin[2]
+            json_dumps_path = os.getcwd() + slash + 'json'
+            if not os.path.isfile(json_dumps_path + slash + tsv_file_name.split('.')[0] + '.json'):
+                with open(json_dumps_path + slash + '{0}.json'.format(tsv_file_name.split('.')[0]), 'x') as json_file:
+                    print('Created file: {0}.json'.format(tsv_file_name.split('.')[0]))
 
-        if valid[0]:
-            print("Vin is valid!\n\n")
-            tojson['valid'] = True
-        else:
-            print("Vin isn't valid!\n\n")
-            tojson['valid'] = True
-        
-        tojson['x1'] = bboxsplit2[0]
-        tojson['x2'] = bboxsplit2[2]
-        tojson['y1'] = bboxsplit2[1]
-        tojson['y2'] = bboxsplit2[3]
-        tojson['x_wconf'] = bboxsplit[1].split(' ')[1]
-        
-        data.append(tojson)
-    
-    json_data = json.dumps(data, indent=4)
-
-    if not os.path.isdir(os.getcwd() + slash + 'json'):
-        os.mkdir(os.getcwd() + slash + 'json')
-
-    json_dumps_path = os.getcwd() + slash + 'json'
-    print(vinbal[0])
-    if not os.path.isfile(json_dumps_path + slash + hocr_file_name.split('.')[0] + '.json'):
-        with open(json_dumps_path + slash + '{0}.json'.format(hocr_file_name.split('.')[0]), 'x') as json_file:
-            print('Created file: {0}.json'.format(hocr_file_name.split('.')[0]))
-
-    with open(json_dumps_path +  slash + '{0}.json'.format(hocr_file_name.split('.')[0]), 'w') as json_file:
-        json_file.write(json_data)
-        print("Successfully saved data to {0}.json".format(hocr_file_name.split('.')[0]))
+            with open(json_dumps_path +  slash + '{0}.json'.format(tsv_file_name.split('.')[0]), 'w') as json_file:
+                json_file.write(json_data)
+                print("Successfully saved data to {0}.json".format(tsv_file_name.split('.')[0]))
