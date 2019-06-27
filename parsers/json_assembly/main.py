@@ -6,14 +6,17 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0,parentdir)
 import modules.util as util
 
-path = "/Users/tylermeserve/Documents/Tesseract/tesseract/out/tsv/"
+inpath = "/Users/tylermeserve/Documents/Tesseract/tesseract/out/tsv/"
+outpath = "./json"
 
 def argParse(opts, args):
-    global path
+    global inpath, outpath
     for opt, arg in opts:
         optc = opt.lower()
-        if optc in ['--path', '-p']:
-            path = arg
+        if optc in ['--inpath', '-ip']:
+            inpath = arg
+        elif optc in ['--outpath', '-op']:
+            outpath = arg
 
 if __name__ == "__main__":
 
@@ -21,7 +24,7 @@ if __name__ == "__main__":
         print("Error: please provide arugments.")
         sys.exit()
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'p', ['--path'])
+        opts, args = getopt.getopt(sys.argv[1:], 'ip:op', ['--inpath', "--outpath"])
     except getopt.GetoptError:
         print("Error: invalid argument.")
         sys.exit(2)
@@ -40,7 +43,7 @@ if __name__ == "__main__":
     toAppend = ""
     filename_prefix = ""
     pagenum_list = []
-    for filename in os.listdir(path):
+    for filename in os.listdir(inpath):
         if not filename_prefix:
             file_extension = "." + filename.split('.')[-1]
             filename_prefix = filename.split('-')[0]
@@ -62,7 +65,7 @@ if __name__ == "__main__":
     
     for item in filename_list:
         
-        with open(path + item, "r") as tsvfile:
+        with open(inpath + item, "r") as tsvfile:
             reader = csv.DictReader(tsvfile, dialect='excel-tab')
             pagenum = int(item.split('.')[0].split('-')[-1])
             tsv_file_name = item.split(".")[0].split('-')[0]
@@ -138,7 +141,6 @@ if __name__ == "__main__":
                 tojson['x2'] = bboxsplit[2]
                 tojson['y1'] = bboxsplit[1]
                 tojson['y2'] = bboxsplit[3]
-                # tojson['x_wconf'] = bboxsplit[1].split(' ')[1]
                 x = 1
                 for item in vin['conf']:
                     tojson['conf_{0}'.format(str(x))] = item
@@ -151,7 +153,7 @@ if __name__ == "__main__":
             if not os.path.isdir(os.getcwd() + slash + 'json'):
                 os.mkdir(os.getcwd() + slash + 'json')
 
-            json_dumps_path = os.getcwd() + slash + 'json'
+            json_dumps_path = outpath
             if not os.path.isfile(json_dumps_path + slash + tsv_file_name.split('.')[0] + '.json'):
                 with open(json_dumps_path + slash + '{0}.json'.format(tsv_file_name.split('.')[0]), 'x') as json_file:
                     print('Created file: {0}.json'.format(tsv_file_name.split('.')[0]))
