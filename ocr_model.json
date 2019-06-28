@@ -1,0 +1,39 @@
+{ "trans": 
+    {
+        "id": "0x1000200010",
+        "type": "chase_kia_pdf",
+        "page": {
+            "id": 1,
+            "record": {
+                "data": {
+                    "type": "vin",
+                    "val": "5XXGT4L30GG032037",
+                    "coords": [100,200,100,300],
+                    "conf": 90,
+                    "attr": [true]
+                },
+                "data": {
+                    "type": "currency",
+                    "val": "2,800.00",
+                    "coords": [100,200,100,300],
+                    "conf": 90,
+                    "attr": []
+                },
+                "data": {
+                    "type": "date",
+                    "val": "7/1/2019",
+                    "coords": [100,200,100,300],
+                    "conf": 90,
+                    "attr": []
+                },
+                "data": {
+                    "type": "summary",
+                    "val": "38,182.00",
+                    "coords": [100,200,100,300],
+                    "conf": 90,
+                    "attr": []
+                }
+            }
+        }
+    }
+}
