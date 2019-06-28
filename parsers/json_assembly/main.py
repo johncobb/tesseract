@@ -1,5 +1,5 @@
 import csv, json, getopt
-import os,sys
+import os,sys, time
 import util
 
 # Input path
@@ -23,9 +23,9 @@ def argParse(opts, args):
 
 if __name__ == "__main__":
 
-    # if not sys.argv[1:]:
-    #     print("Error: please provide arugments.")
-    #     sys.exit()
+    if not sys.argv[1:]:
+        print("Error: please provide arugments.")
+        sys.exit()
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'i:o:p', ['--inpath', "--outpath", "--path"])
     except getopt.GetoptError:
@@ -78,30 +78,37 @@ if __name__ == "__main__":
     
     # Sorts the page number list
     pagenum_list.sort()
-
+    data = []
     # Sorts the filename_list properly so the json will match the order of the tsv files
     filename_list = []
     for pagenum in pagenum_list:
         filename_list.append(filename_prefix + "-" + pagenum + file_extension)
     
+    bbox_object = {
+        "x1": "",
+        "x2": "",
+        "y1": "",
+        "y2": ""
+    }
     # Loops through the file name list
     for item in filename_list:
+        pagenum = int(item.split('.')[0].split('-')[-1])
         # Opens the file currently in the loop
         with open(inpath + slash + item, "r") as tsvfile:
             # Reads the tsv file and converts it to a dictionary
             reader = csv.DictReader(tsvfile, dialect='excel-tab')
             # Gets the page number from the file name
-            pagenum = int(item.split('.')[0].split('-')[-1])
-
+            
             # Makes the dictionary for easy access of values
             vinbaldict = {
                 "vin": "",
                 "balance": "",
-                "bbox": "",
                 "conf": []
             }
-
+            bbox_count = 1
             for row in reader:
+                if bbox_count > 3:
+                    bbox_count = 1
                 conf = row['conf']
                 text = row['text']
                 # If text is none then continue
@@ -111,7 +118,10 @@ if __name__ == "__main__":
                 if not text.strip():
                     continue
                 # Sets up the bbox variable for the coordinates for later usage
-                bbox = "{0} {1} {2} {3}".format(row['left'], row['top'], row['width'], row['height'])
+                bbox_object['x1'] = row['left']
+                bbox_object['x2'] = row['width']
+                bbox_object['y1'] = row['top']
+                bbox_object['y2'] = row['height']
                 if len(text) == 6:
                     toAppend += text
                     # Makes sure that text doesn't have any period's or comma's
@@ -121,21 +131,36 @@ if __name__ == "__main__":
                     # Appends the vin number, bbox, and word confidence to the dictionary and vinbal list
                     if len(toAppend) == 17:
                         vinbaldict['vin'] = toAppend
-                        vinbaldict['bbox'] = bbox
+                        vinbaldict['b{0}'.format(bbox_count)] = bbox_object
                         vinbaldict['conf'].append(conf)
                         vinbal.append(vinbaldict)
                         vinbaldict = {
                             "vin": "",
                             "balance": "",
-                            "bbox": "",
                             "conf": []
                         }
+                        bbox_count += 1
+                        bbox_object = {
+                            "x1": "",
+                            "x2": "",
+                            "y1": "",
+                            "y2": ""
+                        }
+                        bbox_count += 1
                     else:
                         toAppend = ""
                 elif len(text) == 11:
                     toAppend = text
                     # Appends the word confidence to the list
                     vinbaldict['conf'].append(conf)
+                    vinbaldict['b{0}'.format(bbox_count)] = bbox_object
+                    bbox_object = {
+                        "x1": "",
+                        "x2": "",
+                        "y1": "",
+                        "y2": ""
+                    }
+                    bbox_count += 1
                 elif text.find(',') > -1 or text.find('.') > -1:
                     # Makes sure that text is infact a digit
                     if text.replace(',', "").replace('.', '').isdigit():
@@ -146,34 +171,43 @@ if __name__ == "__main__":
                         
                         if not len(vinbal[-1]['conf']) == 2:
                             continue
+                        vinbal[-1]['b{0}'.format(bbox_count)] = bbox_object
                         vinbal[-1]['balance'] = text
                         vinbal[-1]['conf'].append(conf)
-            # Json data to put in the json file
-            data = []
+                        bbox_object = {
+                            "x1": "",
+                            "x2": "",
+                            "y1": "",
+                            "y2": ""
+                        }
+                        bbox_count += 1
+            
             for vin in vinbal:
                 tojson = {}
                 # Prints the vin, balance, and bbox
-                print("The vin is: {0}\nThe balance is: {1}\nThe bbox is: {2}".format(vin["vin"], vin["balance"], vin["bbox"]))
+                # print("The vin is: {0}\nThe balance is: {1}\nThe bbox is: {2}".format(vin["vin"], vin["balance"], vin["bbox"]))
                 # Checks whether or not the vin is valid
                 valid = util.ValidateVIN(vin['vin'])
                 # Sets up the bbox coordinates
-                bboxsplit = vin['bbox'].split(' ')
-
+                # print(str(pagenum))
                 tojson['page'] = str(pagenum)
                 tojson['vin'] = vin["vin"]
                 tojson['balance'] = vin["balance"]
-
+                i = 1
+                numberused = 0
+                while True:
+                    try:
+                        tojson['b{0}'.format(i)] = vin['b{0}'.format(i)]
+                        i += 1
+                    except KeyError:
+                        break
+                
                 if valid[0]:
-                    print("Vin is valid!\n\n")
+                    # print("Vin is valid!\n\n")
                     tojson['valid'] = True
                 else:
-                    print("Vin isn't valid!\n\n")
+                    # print("Vin isn't valid!\n\n")
                     tojson['valid'] = True
-                
-                tojson['x1'] = bboxsplit[0]
-                tojson['x2'] = bboxsplit[2]
-                tojson['y1'] = bboxsplit[1]
-                tojson['y2'] = bboxsplit[3]
                 x = 1
                 for item in vin['conf']:
                     tojson['conf_{0}'.format(str(x))] = item
@@ -181,17 +215,19 @@ if __name__ == "__main__":
                 
                 # Appends tojson to data
                 data.append(tojson)
+            if not data:
+                continue
             
-            json_data = json.dumps(data, indent=4)
+    json_data = json.dumps(data, indent=4)
 
-            if not os.path.isdir(os.getcwd() + slash + 'json'):
-                os.mkdir(os.getcwd() + slash + 'json')
+    if not os.path.isdir(outpath):
+        os.mkdir(outpath)
 
-            json_dumps_path = outpath
-            if not os.path.isfile(json_dumps_path + slash + filename_prefix + '.json'):
-                with open(json_dumps_path + slash + '{0}.json'.format(filename_prefix), 'x') as json_file:
-                    print('Created file: {0}.json'.format(filename_prefix))
+    json_dumps_path = outpath
+    if not os.path.isfile(json_dumps_path + slash + filename_prefix + '.json'):
+        with open(json_dumps_path + slash + '{0}.json'.format(filename_prefix), 'x') as json_file:
+            print('Created file: {0}.json'.format(filename_prefix))
 
-            with open(json_dumps_path +  slash + '{0}.json'.format(filename_prefix), 'w') as json_file:
-                json_file.write(json_data)
-                print("Successfully saved data to {0}.json".format(filename_prefix))
+    with open(json_dumps_path +  slash + '{0}.json'.format(filename_prefix), 'w') as json_file:
+        json_file.write(json_data)
+        print("Successfully saved data to {0}.json".format(filename_prefix))
