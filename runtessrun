@@ -34,20 +34,13 @@ do
 done
 echo "complete."
 
-echo "Tesseract GoBabyGo..."
-
-# run tesseract with custom parameters
-# oem 1 (nerual nets LSTM only)
-# psm 3 (page segmentation mode)  PSM_AUTO
-#tesseract -l eng --oem 1 --psm 3 out/tiff/column1.tiff out/txt/out
-#tesseract -l eng --oem 1 --psm 3 out/jpeg/combined.jpeg out/txt/out
-
-echo "Parameter check"
 
 #command line of ". runtessrun -tsv" will output the tsv files
 #command line of ". runtessrun" will output the txt files
 if [ "$parameter" == "tsv" ]; then
     echo "Option tsv selected"
+    echo "Purging out/tsv ..."
+    rm -rf out/tsv/*.tsv
 
         let i=0
         for column1 in out/jpeg/col1-*.jpeg
@@ -60,14 +53,13 @@ if [ "$parameter" == "tsv" ]; then
 
         let i=0
         # write the header
-        echo -e "level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext" >> out/tsv/finalTSV.tsv
+        echo -e "level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext" >> out/tsv/final.tsv
         for files in out/tsv/result-*.tsv
         do
             spacer=$(printf "%03d" $i)
-            #cat out/tsv/result-$spacer.tsv >> out/tsv/finalTSV.tsv
             
             # start output on line two so that we skip the header in each file
-            tail -n +2 out/tsv/result-$spacer.tsv >> out/tsv/finalTSV.tsv
+            tail -n +2 out/tsv/result-$spacer.tsv >> out/tsv/final.tsv
             let i++
         done
 else
