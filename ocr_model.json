@@ -1,0 +1,38 @@
+{
+    "job": {
+        "config_id": "really_long_conig_file_name",
+        "id": 1561780205,
+        "pages": [
+            {
+                "rows": [
+                    {
+                        "cols": [
+                            {
+                                "type": "vin",
+                                "val": "5XXGT4L30GG032037",
+                                "xy": [[100,200,100,300], [100,200,100,300]],
+                                "conf": 90,
+                                "attr": [true]
+                            },
+                            {
+                                "type": "currency",
+                                "val": 28000.00,
+                                "xy": [[100,200,100,300]],
+                                "conf": 90,
+                                "attr": []
+                            },
+                            {
+                                "type": "date",
+                                "val": "7/1/2019",
+                                "xy": [[100,200,100,300]],
+                                "conf": 90,
+                                "attr": []
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}
+
