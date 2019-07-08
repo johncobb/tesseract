@@ -4,10 +4,8 @@ import util
 
 # Input path
 inpath = "out/tsv/"
-# Output path
-outpath = "out/json/"
 # Root directory path
-path = "/Users/johncobb/dev/tesseract"
+path = "/Users/tylermeserve/Documents/Tesseract/tesseract"
 
 ignore_files = ["final.tsv", ".gitignore"]
 
@@ -22,7 +20,40 @@ filename_ext = ".tsv"
 cfg_id = "12345678"
 job_id = 1561780205
 
-pages_json = {}
+# local storage
+ocr_type = "text"
+ocr_val = ""
+
+
+def task1(ocr_val):
+    if len(ocr_val) == 6:
+        ocr_type = "text"
+        return True
+
+def task2(ocr_val):
+    if len(ocr_val) == 11:
+        ocr_type = "text"
+        return True
+
+def task3(ocr_val):
+    if ocr_val.find(',') > -1 or ocr_val.find('.') > -1:
+        # Makes sure that text is infact a digit
+        if ocr_val.replace(',', "").replace('.', '').isdigit():
+            # Used for value checking later on
+            ocr_val = float(ocr_val.replace(',', ''))
+            ocr_type = "number"
+            return True
+
+
+# reference to index of function being called
+fnc_index = 0
+
+# fmap stores references to task functions and their results
+fmap = {0: [task1, 0],
+    1: [task2, 0],
+    2: [task3, 0],
+    3:0}
+
 
 def build_sample_output():
 
@@ -78,12 +109,6 @@ def build_page_list():
             print("ignore file: ", filename)
             continue
 
-        # if not filename_prefix:
-        #     file_extension = "." + filename.split('.')[-1]
-        #     filename_prefix = filename.split('-')[0]
-
-
-
         # Gets the page number from the file name
         page_num = filename.split('-')[-1].split('.')[0]
 
@@ -103,66 +128,24 @@ def build_page_list():
             filename_list.append(filename_prefix + "-" + pagenum + filename_ext)
 
 
-# python3 modules/parsers/parser_kia_tsv.py --inpath out/tsv --outpath out/json/ --path /Users/johncobb/dev/tesseract
 
-# Parses the command line arguments
-# def argParse(opts, args):
-#     global inpath, outpath, path
-#     for opt, arg in opts:
-#         optc = opt.lower()
-#         if optc in ['--inpath', '-i']:
-#             inpath = arg
-#         elif optc in ['--outpath', '-o']:
-#             outpath = arg
-#         elif optc in ['--path', '-p']:
-#             path = arg
-
-if __name__ == "__main__":
-
-    # build_sample_output()
-    # sys.exit()
-    # if not sys.argv[1:]:
-    #     print("Error: please provide arugments.")
-    #     sys.exit()
-    # try:
-    #     opts, args = getopt.getopt(sys.argv[1:], 'i:o:p', ['--inpath', "--outpath", "--path"])
-    # except getopt.GetoptError:
-    #     print("Error: invalid argument.")
-    #     sys.exit(2)
-    
-    # if not opts and not args:
-    #     print("Error, no parameters provided")
-    #     sys.exit()
-    
-    # # Multi-OS Support
-    # slash = ""
-    # if sys.platform == "linux" or sys.platform == "linux2" or sys.platform == "darwin":
-    #     slash = "/"
-    # elif sys.platform == "win32":
-    #     slash = "\\"
-    
-    limit_pages = 5
-
-    # buffer to store combined ocr data
-    ocr_buffer = ""
+def runner(patharg, inp, tid):
+    global inpath, path, fnc_index, job_id
+    path = patharg
+    inpath = inp
+    job_id = tid
 
     # Concatenates the paths for easier usage
     inpath = os.path.join(path, inpath)
-    outpath = os.path.join(path, outpath)
 
     print("inpath: ", inpath)
-    print("outpath: ", outpath)
     
-
     build_page_list()
 
+    # local dictionaries to build up json
     ocr_cols = []
     ocr_rows = []
     ocr_pages = []
-
-    vin_head_found = False
-    vin_tail_found = False
-    balance_found = False
 
     # redeclare filename_list to limit to just two files
     # TODO: remove before flight
@@ -170,32 +153,20 @@ if __name__ == "__main__":
 
     # for each file in the directory
     for item in filename_list:
-        # print("item: ", item)
-
 
         # parse the page number
         pagenum = int(item.split('.')[0].split('-')[-1])
 
-        # if pagenum == limit_pages:
-        #     print("page_limit: ", pagenum)
-        #     print("exiting system.")
-        #     break
-
+        # *** the following two functions are broken out for readability ***
         # Opens the file currently in the loop
         tsvfile = open(os.path.join(inpath, item))
         # Reads the tsv file and converts it to a dictionary
         reader = csv.DictReader(tsvfile, dialect='excel-tab')
 
-        ocr_valid_field = False
+        # loop through each row in the file
         for row in reader:
             
-            # local storage
-            ocr_type = "text"
-            ocr_val = ""
-            ocr_xy = []
-            ocr_conf = ""
-
-            # store the ocr'd text value
+            # read ocr text value
             ocr_val = row["text"]
 
             # validate if not move to next
@@ -205,54 +176,18 @@ if __name__ == "__main__":
             if not ocr_val.strip():
                 continue
 
+            # local coordinate storage for bbox
+            ocr_xy = []
 
             # append coordiantes (bounding box)
             ocr_xy.append([int(row['left']), int(row['width']), int(row['top']), int(row['height'])])
             # set confidence
             ocr_conf = int(row['conf'])
 
-            if len(ocr_val) == 6:
-                ocr_type = "text"
-                ocr_valid_field = True
-                vin_tail_found = True
-            elif len(ocr_val) == 11:
-                ocr_type = "text"
-                ocr_valid_field = True
-                vin_head_found = True
-            elif ocr_val.find(',') > -1 or ocr_val.find('.') > -1:
-                # Makes sure that text is infact a digit
-                if ocr_val.replace(',', "").replace('.', '').isdigit():
-                    # Used for value checking later on
-                    ocr_val = float(ocr_val.replace(',', ''))
-                    ocr_type = "number"
-                    ocr_valid_field = True
-                    balance_found = True
 
 
-            # if len(ocr_val) == 6:
-            #     ocr_type = "text"
-            #     ocr_buffer += ocr_val
-
-            #     if len(ocr_buffer) == 17:
-            #         # update the ocr_val so that we can place into json
-            #         ocr_val = ocr_buffer
-            #         vin_tail_found = True
-            #     else:
-            #         ocr_buffer = ""
-
-            # elif len(ocr_val) == 11:
-            #     ocr_type = "text"
-            #     ocr_buffer = ocr_val
-            #     vin_head_found = True
-
-            # elif ocr_val.find(',') > -1 or ocr_val.find('.') > -1:
-            #     # Makes sure that text is infact a digit
-            #     if ocr_val.replace(',', "").replace('.', '').isdigit():
-            #         # Used for value checking later on
-            #         dig = float(ocr_val.replace(',', ''))
-            #         ocr_type = "currency"
-            #         ocr_val = dig
-            #         balance_found = True
+            # call the current function and store the result
+            fmap[fnc_index][1] = fmap[fnc_index][0](ocr_val)
 
             # json template for local storage
             ocr_json = {
@@ -264,14 +199,15 @@ if __name__ == "__main__":
             # print(json.dumps(ocr_json, indent=2))
 
 
-            # append the ocr json to column
-            if ocr_valid_field:
+            # if function was successful append the ocr json to column
+            if fmap[fnc_index][1]:
                 ocr_cols.append(ocr_json)
-                # reset flag
-                ocr_valid_field = False
+                fnc_index += 1
+
             # print(json.dumps(ocr_cols, indent=2))
 
-            if vin_head_found and vin_tail_found and balance_found:
+            # check to see if all functions have completed
+            if (fmap[0][1] and fmap[1][1] and fmap[2][1]):
                 # we found all the parts so add columns to row
                 rows_json = {
                     "cols": ocr_cols
@@ -279,9 +215,11 @@ if __name__ == "__main__":
 
                 # append the ocr column data to row
                 ocr_rows.append(rows_json)
-                vin_head_found = False
-                vin_tail_found = False
-
+                fnc_index = 0
+                fmap[0][1] = 0
+                fmap[1][1] = 0
+                fmap[2][1] = 0
+                ocr_cols.clear()
 
         pages_json = {
             "rows": ocr_rows
@@ -300,13 +238,8 @@ if __name__ == "__main__":
         }
     }
 
-    # print(json.dumps(job_json, indent=2))
+    print(json.dumps(job_json, indent=2))
     # sys.exit()
-
-    if not os.path.isdir(outpath):
-        os.mkdir(outpath)
-
-    with open(os.path.join(outpath, 'job.json'), 'w') as outfile:
-        json.dump(job_json, outfile, ensure_ascii=True, indent=2)
     
     print("processing completed successfully")
+    return job_json
