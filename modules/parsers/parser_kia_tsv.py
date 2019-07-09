@@ -166,7 +166,6 @@ def runner(patharg, inp, tid):
         reader = csv.DictReader(tsvfile, dialect='excel-tab')
         # loop through each row in the file
         for row in reader:
-            print(row)
             # read ocr text value
             ocr_val = row["text"]
 
