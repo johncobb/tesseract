@@ -115,7 +115,7 @@ def build_page_list():
         # Makes sure page_num isn't empty
         if not page_num:
             continue
-        
+
         if page_num.isdigit():
             # Adds page number to the list
             pagenum_list.append(page_num)
@@ -130,7 +130,7 @@ def build_page_list():
 
 
 def runner(patharg, inp, tid):
-    global inpath, path, fnc_index, job_id
+    global inpath, path, fnc_index, job_id, pagenum_list
     path = patharg
     inpath = inp
     job_id = tid
@@ -139,7 +139,7 @@ def runner(patharg, inp, tid):
     inpath = os.path.join(path, inpath)
 
     print("inpath: ", inpath)
-    
+
     build_page_list()
 
     # local dictionaries to build up json
@@ -165,7 +165,7 @@ def runner(patharg, inp, tid):
 
         # loop through each row in the file
         for row in reader:
-            
+
             # read ocr text value
             ocr_val = row["text"]
 
@@ -196,7 +196,6 @@ def runner(patharg, inp, tid):
                 "xy": ocr_xy,
                 "conf": ocr_conf
             }
-            # print(json.dumps(ocr_json, indent=2))
 
 
             # if function was successful append the ocr json to column
@@ -219,8 +218,7 @@ def runner(patharg, inp, tid):
                 fmap[0][1] = 0
                 fmap[1][1] = 0
                 fmap[2][1] = 0
-                ocr_cols.clear()
-
+        
         pages_json = {
             "rows": ocr_rows
         }
@@ -240,6 +238,6 @@ def runner(patharg, inp, tid):
 
     print(json.dumps(job_json, indent=2))
     # sys.exit()
-    
+
     print("processing completed successfully")
     return job_json

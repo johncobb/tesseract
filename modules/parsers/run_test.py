@@ -14,10 +14,9 @@ def argparsing(opts, args):
     global path, inp, out, tid
     for opt, arg in opts:
         optc = opt.lower()
-        if optc in ['--path', '-p']:
-            path = arg
-        elif optc in ['--input', '-i']:
-            inp = arg
+        if optc in ['--input', '-i']:
+            if os.path.isdir(arg):
+                inp = arg
         elif optc in ['--output', '-o']:
             out = arg
         elif optc in ['--tid', '-t']:
@@ -50,11 +49,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     argparsing(opts, args)
-    # file = sys.argv[1] 
-
-    # parser_kia = Kia()
-
-    # parser_kia.parse(file)
 
     json_data = runner(path, inp, tid)
+
     saveJson(json_data)
