@@ -150,8 +150,6 @@ def runner(patharg, inp, tid):
     # redeclare filename_list to limit to just two files
     # TODO: remove before flight)
     filename_list = [f for f in os.listdir(inpath) if os.path.isfile(os.path.join(inpath, f))]
-    print(filename_list)
-    print(os.listdir(inpath))
     # for each file in the directory
     for item in filename_list:
         if item in ignore_files:
