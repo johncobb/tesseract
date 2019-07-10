@@ -101,6 +101,7 @@ def build_sample_output():
 
 
 def build_page_list():
+    global filename_list, inpath
     # Gets the page numbers
     for filename in os.listdir(inpath):
         # Sets the filename_prefix variable and file_extension variable
@@ -120,17 +121,14 @@ def build_page_list():
             # Adds page number to the list
             pagenum_list.append(page_num)
 
-        # Sorts the page number list
-        pagenum_list.sort()
-
-        # after sorting the pages build the list of files
-        for pagenum in pagenum_list:
-            filename_list.append(filename_prefix + "-" + pagenum + filename_ext)
-
-
+    # Sorts the page number list
+    pagenum_list.sort()
+    # after sorting the pages build the list of files
+    for pagenum in pagenum_list:
+        filename_list.append(filename_prefix + "-" + pagenum + filename_ext)
 
 def runner(patharg, inp, tid):
-    global inpath, path, fnc_index, job_id, pagenum_list
+    global inpath, path, fnc_index, job_id, pagenum_list, filename_list
     path = patharg
     inpath = inp
     job_id = tid
@@ -149,11 +147,10 @@ def runner(patharg, inp, tid):
 
     # redeclare filename_list to limit to just two files
     # TODO: remove before flight)
-    filename_list = [f for f in os.listdir(inpath) if os.path.isfile(os.path.join(inpath, f))]
+    # filename_list = [f for f in os.listdir(inpath) if os.path.isfile(os.path.join(inpath, f))]
+
     # for each file in the directory
     for item in filename_list:
-        if item in ignore_files:
-            continue
         # parse the page number
         pagenum = int(item.split('.')[0].split('-')[-1])
 
@@ -223,19 +220,15 @@ def runner(patharg, inp, tid):
             }
         ocr_pages.append(pages_json)
 
-        # print(json.dumps(ocr_cols, indent=2))
-    
     job_json =   {
         "job": {
             "config_id": cfg_id,
             "id": job_id,
-            "pages": [
-                ocr_pages
-            ]
+            "pages": ocr_pages
         }
     }
-
-    print(json.dumps(job_json, indent=2))
+    
+    # print(json.dumps(job_json, indent=2))
     # sys.exit()
 
     print("processing completed successfully")
