@@ -217,10 +217,10 @@ def runner(patharg, inp, tid):
                 fmap[1][1] = 0
                 fmap[2][1] = 0
                 ocr_cols = []
-        
         pages_json = {
+            "num": pagenum + 1,
             "rows": ocr_rows
-        }
+            }
         ocr_pages.append(pages_json)
 
         # print(json.dumps(ocr_cols, indent=2))
@@ -230,7 +230,7 @@ def runner(patharg, inp, tid):
             "config_id": cfg_id,
             "id": job_id,
             "pages": [
-                pages_json
+                ocr_pages
             ]
         }
     }
