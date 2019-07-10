@@ -214,11 +214,15 @@ def runner(patharg, inp, tid):
                 fmap[1][1] = 0
                 fmap[2][1] = 0
                 ocr_cols = []
+        
+        if not ocr_rows:
+            continue
         pages_json = {
             "num": pagenum + 1,
             "rows": ocr_rows
             }
         ocr_pages.append(pages_json)
+        ocr_rows = []
 
     job_json =   {
         "job": {
@@ -227,7 +231,7 @@ def runner(patharg, inp, tid):
             "pages": ocr_pages
         }
     }
-    
+
     # print(json.dumps(job_json, indent=2))
     # sys.exit()
 
