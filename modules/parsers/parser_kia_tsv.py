@@ -216,6 +216,7 @@ def runner(patharg, inp, tid):
                 fmap[0][1] = 0
                 fmap[1][1] = 0
                 fmap[2][1] = 0
+                ocr_cols = []
         
         pages_json = {
             "rows": ocr_rows
