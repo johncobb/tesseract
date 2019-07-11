@@ -1,6 +1,7 @@
 import csv, json, getopt
 import os,sys, time
 import util
+import re
 
 # Input path
 inpath = "out/tsv/"
@@ -26,16 +27,19 @@ ocr_val = ""
 
 
 def task1(ocr_val):
+    global ocr_type
     if len(ocr_val) == 6:
         ocr_type = "text"
         return True
 
 def task2(ocr_val):
+    global ocr_type
     if len(ocr_val) == 11:
         ocr_type = "text"
         return True
 
 def task3(ocr_val):
+    global ocr_type
     if ocr_val.find(',') > -1 or ocr_val.find('.') > -1:
         # Makes sure that text is infact a digit
         if ocr_val.replace(',', "").replace('.', '').isdigit():
@@ -43,6 +47,15 @@ def task3(ocr_val):
             ocr_val = float(ocr_val.replace(',', ''))
             ocr_type = "number"
             return True
+
+def task4(ocr_val):
+    # ^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}$
+    if util.ValidateVIN(ocr_val)[0]:
+        return True
+    elif re.match(r'^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}', ocr_val):
+        return True
+    else:
+        return False
 
 
 # reference to index of function being called
@@ -127,6 +140,84 @@ def build_page_list():
     for pagenum in pagenum_list:
         filename_list.append(filename_prefix + "-" + pagenum + filename_ext)
 
+def post_processing(json_data):
+    global job_id, cfg_id
+    prev_val = ""
+    new_json = {
+        "job": {
+            "config_id": cfg_id,
+            "id": job_id
+        }
+    }
+    ocr_cols = []
+    ocr_rows = []
+    ocr_pages = []
+    for page in json_data['job']['pages']:
+        for row in page['rows']:
+            for col in row['cols']:
+                index1 = json_data['job']['pages'].index(page)
+                index2 = json_data['job']['pages'][index1]['rows'].index(row)
+                index3 = json_data['job']['pages'][index1]['rows'][index2]['cols'].index(col)
+                ocr_col = {}
+                if col['type'] == "text":
+                    if len(col['val']) == 6:
+                        if col['val'].lower().find('total') > -1:
+                            json_data['job']['pages'][index1]['rows'][index2]['cols'][index3]['attr'] = False
+                            continue
+                        else:
+                            prev_val = col['val']
+                            prev_xy = col['xy']
+                            prev_conf = col['conf']
+                            prev_index1 = index1
+                            prev_index2 = index2
+                            prev_index3 = index3
+                    elif len(col['val']) == 11:
+                        if prev_val.lower().find('serial') > -1 or prev_val.lower().find('inding') > -1 or col['val'].lower().find('AUTOMOBILES') > -1:
+                            prev_val = ""
+                            continue
+                        val = col['val'] + prev_val
+                        if util.ValidateVIN(val):
+                            xy = [json_data['job']['pages'][index1]['rows'][index2]['cols'][index3]['xy'], json_data['job']['pages'][prev_index1]['rows'][prev_index2]['cols'][prev_index3]['xy']]
+                            ocr_col = {
+                                "type": col['type'],
+                                'val': val,
+                                'xy': xy,
+                                'conf': (col['conf'] + json_data['job']['pages'][index1]['rows'][index2]['cols'][index3]['conf'])/2,
+                                'attr': True
+                            }
+                elif col['type'] == 'number':
+                    if re.match(r'^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}', col['val']):
+                        ocr_col = {
+                            "type": col['type'],
+                            'val': col['val'],
+                            'xy': col['xy'],
+                            'conf': col['conf'],
+                            'attr': True
+                        }
+                if not ocr_col:
+                    continue
+                ocr_cols.append(ocr_col)
+                ocr_col = {}
+            if not ocr_cols:
+                continue
+
+            row_json = {
+                'cols': ocr_cols
+            }
+            ocr_rows.append(row_json)
+            ocr_cols = []
+        if not ocr_rows:
+            continue
+        page_json = {
+            'page': page['page'],
+            'rows': ocr_rows
+        }
+        ocr_pages.append(page_json)
+        ocr_rows = []
+
+    new_json['job']['pages'] = ocr_pages
+    return new_json
+
 def runner(patharg, inp, tid):
     global inpath, path, fnc_index, job_id, pagenum_list, filename_list
     path = patharg
@@ -144,10 +235,6 @@ def runner(patharg, inp, tid):
     ocr_cols = []
     ocr_rows = []
     ocr_pages = []
-
-    # redeclare filename_list to limit to just two files
-    # TODO: remove before flight)
-    # filename_list = [f for f in os.listdir(inpath) if os.path.isfile(os.path.join(inpath, f))]
 
     # for each file in the directory
     for item in filename_list:
@@ -179,8 +266,6 @@ def runner(patharg, inp, tid):
             # set confidence
             ocr_conf = int(row['conf'])
 
-
-
             # call the current function and store the result
             fmap[fnc_index][1] = fmap[fnc_index][0](ocr_val)
 
@@ -192,7 +277,6 @@ def runner(patharg, inp, tid):
                 "conf": ocr_conf
             }
 
-
             # if function was successful append the ocr json to column
             if fmap[fnc_index][1]:
                 ocr_cols.append(ocr_json)
@@ -203,12 +287,15 @@ def runner(patharg, inp, tid):
             # check to see if all functions have completed
             if (fmap[0][1] and fmap[1][1] and fmap[2][1]):
                 # we found all the parts so add columns to row
+                # if not task4(ocr_val):
+                #     continue
                 rows_json = {
                     "cols": ocr_cols
                 }
 
                 # append the ocr column data to row
                 ocr_rows.append(rows_json)
+                ocr_rows.reverse()
                 fnc_index = 0
                 fmap[0][1] = 0
                 fmap[1][1] = 0
@@ -218,7 +305,7 @@ def runner(patharg, inp, tid):
         if not ocr_rows:
             continue
         pages_json = {
-            "num": pagenum + 1,
+            "page": pagenum + 1,
             "rows": ocr_rows
             }
         ocr_pages.append(pages_json)
@@ -234,6 +321,6 @@ def runner(patharg, inp, tid):
 
     # print(json.dumps(job_json, indent=2))
     # sys.exit()
-
+    job_json = post_processing(job_json)
     print("processing completed successfully")
     return job_json
