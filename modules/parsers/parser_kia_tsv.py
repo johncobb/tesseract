@@ -176,7 +176,9 @@ def post_processing(json_data):
                             prev_val = ""
                             continue
                         val = col['val'] + prev_val
-                        if util.ValidateVIN(val):
+                        valid = util.ValidateVIN(val)
+                        print(valid)
+                        if util.ValidateVIN(val)[0]:
                             xy = [json_data['job']['pages'][index1]['rows'][index2]['cols'][index3]['xy'], json_data['job']['pages'][prev_index1]['rows'][prev_index2]['cols'][prev_index3]['xy']]
                             ocr_col = {
                                 "type": col['type'],
@@ -184,6 +186,15 @@ def post_processing(json_data):
                                 'xy': xy,
                                 'conf': (col['conf'] + json_data['job']['pages'][index1]['rows'][index2]['cols'][index3]['conf'])/2,
                                 'attr': True
+                            }
+                        else:
+                            xy = [json_data['job']['pages'][index1]['rows'][index2]['cols'][index3]['xy'], json_data['job']['pages'][prev_index1]['rows'][prev_index2]['cols'][prev_index3]['xy']]
+                            ocr_col = {
+                                "type": col['type'],
+                                'val': val,
+                                'xy': xy,
+                                'conf': (col['conf'] + json_data['job']['pages'][index1]['rows'][index2]['cols'][index3]['conf'])/2,
+                                'attr': False
                             }
                 elif col['type'] == 'number':
                     if re.match(r'^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}', col['val']):
@@ -193,6 +204,14 @@ def post_processing(json_data):
                             'xy': col['xy'],
                             'conf': col['conf'],
                             'attr': True
+                        }
+                    else:
+                        ocr_col = {
+                            "type": col['type'],
+                            'val': col['val'],
+                            'xy': col['xy'],
+                            'conf': col['conf'],
+                            'attr': False
                         }
                 if not ocr_col:
                     continue
@@ -235,6 +254,8 @@ def runner(patharg, inp, tid):
     ocr_cols = []
     ocr_rows = []
     ocr_pages = []
+
+    # filename_list = ['result-004.tsv', 'result-006.tsv']
 
     # for each file in the directory
     for item in filename_list:
@@ -295,7 +316,6 @@ def runner(patharg, inp, tid):
 
                 # append the ocr column data to row
                 ocr_rows.append(rows_json)
-                ocr_rows.reverse()
                 fnc_index = 0
                 fmap[0][1] = 0
                 fmap[1][1] = 0
@@ -304,6 +324,7 @@ def runner(patharg, inp, tid):
         
         if not ocr_rows:
             continue
+        ocr_rows.reverse()
         pages_json = {
             "page": pagenum + 1,
             "rows": ocr_rows

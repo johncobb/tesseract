@@ -53,3 +53,5 @@ if __name__ == "__main__":
     json_data = runner(path, inp, tid)
 
     saveJson(json_data)
+
+    # ripper(out, tid)
