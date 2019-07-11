@@ -28,31 +28,34 @@ ocr_val = ""
 
 def task1(ocr_val):
     global ocr_type
-    if len(ocr_val) == 6:
+    if len(ocr_val) == 11:
         ocr_type = "text"
         return True
 
 def task2(ocr_val):
     global ocr_type
-    if len(ocr_val) == 11:
+    if len(ocr_val) == 6:
         ocr_type = "text"
         return True
 
+# def task3(ocr_val):
+#     global ocr_type
+#     if ocr_val.find(',') > -1 or ocr_val.find('.') > -1:
+#         # Makes sure that text is infact a digit
+#         if ocr_val.replace(',', "").replace('.', '').isdigit():
+#             # Used for value checking later on
+#             ocr_val = float(ocr_val.replace(',', ''))
+#             ocr_type = "number"
+#             return True
+
 def task3(ocr_val):
     global ocr_type
-    if ocr_val.find(',') > -1 or ocr_val.find('.') > -1:
-        # Makes sure that text is infact a digit
-        if ocr_val.replace(',', "").replace('.', '').isdigit():
-            # Used for value checking later on
-            ocr_val = float(ocr_val.replace(',', ''))
-            ocr_type = "number"
-            return True
-
-def task4(ocr_val):
     # ^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}$
-    if util.ValidateVIN(ocr_val)[0]:
-        return True
-    elif re.match(r'^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}', ocr_val):
+    # if util.ValidateVIN(ocr_val)[0]:
+    #     ocr_type = 'text'
+    #     return True
+    if re.match(r'^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}', ocr_val):
+        ocr_type = 'number'
         return True
     else:
         return False
@@ -152,71 +155,54 @@ def post_processing(json_data):
     ocr_cols = []
     ocr_rows = []
     ocr_pages = []
+
+    index_header = 0
+    index_footer = 1
+    index_balance = 2
+
     for page in json_data['job']['pages']:
+        
+
         for row in page['rows']:
-            for col in row['cols']:
-                index1 = json_data['job']['pages'].index(page)
-                index2 = json_data['job']['pages'][index1]['rows'].index(row)
-                index3 = json_data['job']['pages'][index1]['rows'][index2]['cols'].index(col)
-                ocr_col = {}
-                if col['type'] == "text":
-                    if len(col['val']) == 6:
-                        if col['val'].lower().find('total') > -1:
-                            json_data['job']['pages'][index1]['rows'][index2]['cols'][index3]['attr'] = False
-                            continue
-                        else:
-                            prev_val = col['val']
-                            prev_xy = col['xy']
-                            prev_conf = col['conf']
-                            prev_index1 = index1
-                            prev_index2 = index2
-                            prev_index3 = index3
-                    elif len(col['val']) == 11:
-                        if prev_val.lower().find('serial') > -1 or prev_val.lower().find('inding') > -1 or col['val'].lower().find('AUTOMOBILES') > -1:
-                            prev_val = ""
-                            continue
-                        val = col['val'] + prev_val
-                        valid = util.ValidateVIN(val)
-                        print(valid)
-                        if util.ValidateVIN(val)[0]:
-                            xy = [json_data['job']['pages'][index1]['rows'][index2]['cols'][index3]['xy'], json_data['job']['pages'][prev_index1]['rows'][prev_index2]['cols'][prev_index3]['xy']]
-                            ocr_col = {
-                                "type": col['type'],
-                                'val': val,
-                                'xy': xy,
-                                'conf': (col['conf'] + json_data['job']['pages'][index1]['rows'][index2]['cols'][index3]['conf'])/2,
-                                'attr': True
-                            }
-                        else:
-                            xy = [json_data['job']['pages'][index1]['rows'][index2]['cols'][index3]['xy'], json_data['job']['pages'][prev_index1]['rows'][prev_index2]['cols'][prev_index3]['xy']]
-                            ocr_col = {
-                                "type": col['type'],
-                                'val': val,
-                                'xy': xy,
-                                'conf': (col['conf'] + json_data['job']['pages'][index1]['rows'][index2]['cols'][index3]['conf'])/2,
-                                'attr': False
-                            }
-                elif col['type'] == 'number':
-                    if re.match(r'^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}', col['val']):
-                        ocr_col = {
-                            "type": col['type'],
-                            'val': col['val'],
-                            'xy': col['xy'],
-                            'conf': col['conf'],
-                            'attr': True
-                        }
-                    else:
-                        ocr_col = {
-                            "type": col['type'],
-                            'val': col['val'],
-                            'xy': col['xy'],
-                            'conf': col['conf'],
-                            'attr': False
-                        }
-                if not ocr_col:
-                    continue
-                ocr_cols.append(ocr_col)
-                ocr_col = {}
+            conf = []
+
+            vin = row['cols'][index_header]['val'] + row['cols'][index_footer]['val']
+            vin_xy = [row['cols'][index_header]['xy'], row['cols'][index_footer]['xy']]
+
+            valid = util.ValidateVIN(vin)
+            balance = row['cols'][index_balance]['val']
+            bal_xy = row['cols'][index_balance]['xy']
+
+            conf.append(row['cols'][index_header]['conf'])
+            conf.append(row['cols'][index_footer]['conf'])
+            # conf.append(row['cols'][index_balance]['conf'])
+            bal_conf = row['cols'][index_balance]['conf']
+
+            vin_attr = valid[0]
+            bal_attr = row['cols'][index_balance]['attr']
+
+            ocr_col = {
+                'type': 'text',
+                'val': vin,
+                'xy': vin_xy,
+                'conf': conf,
+                'attr': vin_attr
+            }
+
+            ocr_col2 = {
+                'type': 'number',
+                'val': balance,
+                'xy': bal_xy,
+                'conf': [bal_conf],
+                'attr': bal_attr
+            }
+
+
+            ocr_cols.append(ocr_col)
+            ocr_cols.append(ocr_col2)
+            ocr_col = {}
+            ocr_col2 = {}
+
             if not ocr_cols:
                 continue
 
@@ -295,11 +281,13 @@ def runner(patharg, inp, tid):
                 "type": ocr_type,
                 "val": ocr_val,
                 "xy": ocr_xy,
-                "conf": ocr_conf
+                "conf": ocr_conf,
+                "attr": False
             }
 
             # if function was successful append the ocr json to column
             if fmap[fnc_index][1]:
+                ocr_json['attr'] = True
                 ocr_cols.append(ocr_json)
                 fnc_index += 1
 
@@ -324,7 +312,7 @@ def runner(patharg, inp, tid):
         
         if not ocr_rows:
             continue
-        ocr_rows.reverse()
+        # ocr_rows.reverse()
         pages_json = {
             "page": pagenum + 1,
             "rows": ocr_rows
