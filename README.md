@@ -104,7 +104,7 @@ tesseract -l eng --oem 1 --psm 3 out/jpeg/combined_300ppi.jpeg out/tsv/result ts
 ### Results
 The following excerpt is from line 94-96 in out/tsv/result.tsv
 
-<img src="files/example_sult.png" title="Excerpt from out/tsv/result.tsv">
+<img src="files/example_result.png" title="Excerpt from out/tsv/result.tsv">
 
 ### runtessrun script
 Follow the instructions in the parsers README.md. Finally, modify the path labeled (TODO: Modify Path) so that the scripts reference the correct path.
