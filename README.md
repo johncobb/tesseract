@@ -69,6 +69,7 @@ gs --version # ghostscript version
 ```
 
 <div id='examples'/>
+
 ## Examples
 
 ### Converting the example file (in this case we'll convert to tiff)
