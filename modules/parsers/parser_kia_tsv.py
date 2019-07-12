@@ -38,28 +38,14 @@ def task2(ocr_val):
         ocr_type = "text"
         return True
 
-# def task3(ocr_val):
-#     global ocr_type
-#     if ocr_val.find(',') > -1 or ocr_val.find('.') > -1:
-#         # Makes sure that text is infact a digit
-#         if ocr_val.replace(',', "").replace('.', '').isdigit():
-#             # Used for value checking later on
-#             ocr_val = float(ocr_val.replace(',', ''))
-#             ocr_type = "number"
-#             return True
-
 def task3(ocr_val):
     global ocr_type
     # ^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}$
-    # if util.ValidateVIN(ocr_val)[0]:
-    #     ocr_type = 'text'
-    #     return True
     if re.match(r'^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}', ocr_val):
         ocr_type = 'number'
         return True
     else:
         return False
-
 
 # reference to index of function being called
 fnc_index = 0
@@ -69,7 +55,6 @@ fmap = {0: [task1, 0],
     1: [task2, 0],
     2: [task3, 0],
     3:0}
-
 
 def build_sample_output():
 
@@ -161,7 +146,6 @@ def post_processing(json_data):
     index_balance = 2
 
     for page in json_data['job']['pages']:
-        
 
         for row in page['rows']:
             conf = []
@@ -211,8 +195,6 @@ def post_processing(json_data):
             }
             ocr_rows.append(row_json)
             ocr_cols = []
-        if not ocr_rows:
-            continue
         page_json = {
             'page': page['page'],
             'rows': ocr_rows
@@ -309,9 +291,6 @@ def runner(patharg, inp, tid):
                 fmap[1][1] = 0
                 fmap[2][1] = 0
                 ocr_cols = []
-        
-        if not ocr_rows:
-            continue
         # ocr_rows.reverse()
         pages_json = {
             "page": pagenum + 1,
