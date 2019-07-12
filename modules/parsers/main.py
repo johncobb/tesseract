@@ -2,7 +2,6 @@ import sys
 import os
 import getopt
 import json
-from parser_kia import Kia
 from parser_kia_tsv import runner
 
 path = ""

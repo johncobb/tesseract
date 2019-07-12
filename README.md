@@ -56,6 +56,13 @@ Follow the instructions in the parsers README.md. Finally, modify the path label
 . runtessrun
 ```
 
+### Python Script
+Prior to running the main.py script navigate to the modules/parsers folder and set up the virtual environment.
+Follow the instructions in the parsers README.md.
+```console
+. python main.py -i /Users/tylermeserve/Documents/Tesseract/tesseract/out/tsv -o /Users/tylermeserve/Documents/Tesseract/tesseract/out/json -t 156180205
+```
+Please be sure that -i is a direct path to the tsv files to parse, and -o is the direct path to put the json file. The -t parameter is the transactionid also known as an epoch time.
 
 ### Resources
 #### https://github.com/tesseract-ocr/tesseract/wiki/Command-Line-Usage
