@@ -84,11 +84,11 @@ else
         # /Users/username/tesseract/parsers/env/bin/python
         
         let i=0
-        for files in out/txt/out-*.txt
+        for files in out/tsv/result-*.tsv
         do
             spacer=$(printf "%03d" $i)
             # run python command to merge all files into final
-            $(pwd)/parsers/env/bin/python parsers/modules/run_test.py out/txt/out-$spacer.txt >> out/txt/final.txt
+            $(pwd)/parsers/env/bin/python parsers/modules/main.py out/txt/out-$spacer.txt >> out/txt/final.txt
             let i++
         done      
 fi

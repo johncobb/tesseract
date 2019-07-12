@@ -1,4 +1,53 @@
 
+# Using Tesseract to convert PDF files to JSON
+
+## Table of contents
+- [Overview](#overview)
+- [Prerequisites](#prereq)
+- [Examples](#examples)
+- [References](#references)
+
+<div id='overview'/>
+
+## Overview
+
+Exploring Tessearct to convert PDF files into a portable JSON file format.  
+
+<div id='prereq'/>
+
+## Prerequisites:
+
+ - Installing PiP
+ - Installing Tesseract
+ - Installing ImageMagik
+ - Installing gs
+
+Navigate to the modules folder by issuing the following command: 
+```console
+cd modules 
+```
+
+```console
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+
+python get-pip.py --user
+```
+
+ - Installing Virtual Environment 
+```console
+pip install --user virtualenv
+```
+
+ - Initialize python3 in new virtual environment
+```console
+virtualenv -p python3 env
+```
+
+ - Activate environment  
+```console
+. env/bin/activate
+```
+
 ### Mac OS install via brew
 ```console
 brew install tesseract
@@ -17,23 +66,29 @@ sudo apt install imagemagick
 tesseract --version
 convert -version # imagemagick version
 gs --version # ghostscript version
-
 ```
 
-### pdf to tiff
+<div id='examples'/>
+## Examples
+
+### Converting the example file (in this case we'll convert to tiff)
+The command below will convert the example.pdf to a tiff file and place the output in ```out/tiff/out.tiff```.
 ```console
 convert -density 300 pdf/example.pdf -depth 8 -strip -background white -alpha off out/tiff/out.tiff
 ```
 
-### crop two columns of data and append into one combined image
-Tip: make sure to pad the filename with leading zeros so that the files enumerate
-in the correct order when we go to splice later on. ie: col1-%03d.jpeg
-```console
+### Limiting noise
+Before we send the tiff file to tesseract we need to limit how much data is being passed in. We do this by cropping only the data we want into columns. These columns are then combined into one image file before being passed to tesseract for processing. When cropping the tiff we will convert the output to JPEG format which will further reduce the size.
 
+**Tip: make sure to pad the filename with leading zeros so that the files enumerate in the correct order when we go to splice later on. ie: col1-%03d.jpeg**
+```console
 convert out/tiff/out.tiff -crop 400x2550+10+200 out/jpeg/col1-%03d.jpeg
 convert out/tiff/out.tiff -crop 200x2550+1500+200 out/jpeg/col2-%03d.jpeg
-# below we combine page 4 from col1-4.jpeg and col2-4.jpeg into combined.jpeg
-convert out/jpeg/col1-4.jpeg out/jpeg/col2-4.jpeg +append out/jpeg/combined.jpeg
+convert out/jpeg/col1-004.jpeg out/jpeg/col2-004.jpeg +append out/jpeg/combined.jpeg
+
+# resample image
+convert -units PixelsPerInch out/jpeg/combined.jpeg -resample 300 out/jpeg/combined_300ppi.jpeg
+
 ```
 
 ### Run tesseract on file
@@ -41,20 +96,22 @@ convert out/jpeg/col1-4.jpeg out/jpeg/col2-4.jpeg +append out/jpeg/combined.jpeg
 # run tesseract with custom parameters
 # oem 1 (nerual nets LSTM only)
 # psm 3 (page segmentation mode)  PSM_AUTO
-tesseract -l eng --oem 1 --psm 3 out/tiff/column1.tiff out/txt/out
+# tsv file output to tab separated file
+tesseract -l eng --oem 1 --psm 3 out/jpeg/combined_300ppi.jpeg out/tsv/result tsv
 ```
 
-### Write hocr file (bounding coordinates)
-```console
-tesseract -l eng out/tiff/column1.tiff out/hocr/result hocr
-```
+### Results
+The following excerpt is from line 94-96 in out/tsv/result.tsv
+
+<img src="files/example_sult.png" title="Excerpt from out/tsv/result.tsv">
 
 ### runtessrun script
-Prior to running the runtessrun script navigate to the parsers folder and setup the virutal environment.
 Follow the instructions in the parsers README.md. Finally, modify the path labeled (TODO: Modify Path) so that the scripts reference the correct path.
 ```console
 . runtessrun
 ```
+
+
 
 ### Python Script
 Prior to running the main.py script navigate to the modules/parsers folder and set up the virtual environment.
