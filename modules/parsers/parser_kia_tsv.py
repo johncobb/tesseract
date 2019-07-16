@@ -34,7 +34,7 @@ def task1(ocr_val):
 
 def task2(ocr_val):
     global ocr_type
-    if len(ocr_val) == 6:
+    if len(ocr_val) == 6 and ocr_val.isdigit():
         ocr_type = "text"
         return True
 
@@ -106,7 +106,8 @@ def build_page_list():
     # Gets the page numbers
     for filename in os.listdir(inpath):
         # Sets the filename_prefix variable and file_extension variable
-
+        if not os.path.isfile(os.path.join(inpath, filename)):
+            continue
         if filename in ignore_files:
             print("ignore file: ", filename)
             continue
@@ -149,61 +150,133 @@ def post_processing(json_data):
 
         for row in page['rows']:
             conf = []
+            if len(row['cols']) == 3:
 
-            vin = row['cols'][index_header]['val'] + row['cols'][index_footer]['val']
-            vin_xy = [row['cols'][index_header]['xy'], row['cols'][index_footer]['xy']]
+                vin = row['cols'][index_header]['val'] + row['cols'][index_footer]['val']
+                vin_header_xy = row['cols'][index_header]['xy']
+                vin_footer_xy = row['cols'][index_footer]['xy']
 
-            valid = util.ValidateVIN(vin)
-            balance = row['cols'][index_balance]['val']
-            bal_xy = row['cols'][index_balance]['xy']
+                valid = util.ValidateVIN(vin)
+                balance = row['cols'][index_balance]['val']
+                bal_xy = row['cols'][index_balance]['xy']
 
-            conf.append(row['cols'][index_header]['conf'])
-            conf.append(row['cols'][index_footer]['conf'])
-            # conf.append(row['cols'][index_balance]['conf'])
-            bal_conf = row['cols'][index_balance]['conf']
+                conf.append(row['cols'][index_header]['conf'])
+                conf.append(row['cols'][index_footer]['conf'])
+                bal_conf = row['cols'][index_balance]['conf']
 
-            vin_attr = valid[0]
-            bal_attr = row['cols'][index_balance]['attr']
+                vin_attr = valid[0]
+                bal_attr = row['cols'][index_balance]['attr']
 
-            ocr_col = {
-                'type': 'text',
-                'val': vin,
-                'xy': vin_xy,
-                'conf': conf,
-                'attr': vin_attr
-            }
+                ocr_col = {
+                    'type': 'text',
+                    'val': vin,
+                    'xy': [vin_header_xy, vin_footer_xy],
+                    'conf': conf,
+                    'attr': vin_attr
+                }
 
-            ocr_col2 = {
-                'type': 'number',
-                'val': balance,
-                'xy': bal_xy,
-                'conf': [bal_conf],
-                'attr': bal_attr
-            }
+                ocr_col2 = {
+                    'type': 'number',
+                    'val': balance,
+                    'xy': [bal_xy],
+                    'conf': [bal_conf],
+                    'attr': bal_attr
+                }
 
 
-            ocr_cols.append(ocr_col)
-            ocr_cols.append(ocr_col2)
-            ocr_col = {}
-            ocr_col2 = {}
+                ocr_cols.append(ocr_col)
+                ocr_cols.append(ocr_col2)
+                ocr_col = {}
+                ocr_col2 = {}
 
-            if not ocr_cols:
-                continue
+                if not ocr_cols:
+                    continue
 
-            row_json = {
-                'cols': ocr_cols
-            }
-            ocr_rows.append(row_json)
-            ocr_cols = []
+                row_json = {
+                    'cols': ocr_cols
+                }
+                ocr_rows.append(row_json)
+                ocr_cols = []
         page_json = {
             'page': page['page'],
             'rows': ocr_rows
         }
         ocr_pages.append(page_json)
         ocr_rows = []
+        
 
     new_json['job']['pages'] = ocr_pages
     return new_json
+
+def parser(item):
+    global inpath, path, fnc_index, job_id, pagenum_list, filename_list
+     # parse the page number
+    
+    ocr_rows = []
+    ocr_cols = []
+    ocr_val = ""
+    # *** the following two functions are broken out for readability ***
+    # Opens the file currently in the loop
+    tsvfile = open(os.path.join(inpath, item))
+    # Reads the tsv file and converts it to a dictionary
+    reader = csv.DictReader(tsvfile, dialect='excel-tab')
+    # loop through each row in the file
+    for row in reader:
+        # read ocr text value
+        ocr_val = row["text"]
+
+        # validate if not move to next
+        if not ocr_val:
+            continue
+        # trim and validate if not move to next
+        if not ocr_val.strip():
+            continue
+
+        # append coordiantes (bounding box)
+        ocr_xy = [int(row['left']), int(row['width']), int(row['top']), int(row['height'])]
+        # set confidence
+        ocr_conf = int(row['conf'])
+
+        # call the current function and store the result
+        fmap[fnc_index][1] = fmap[fnc_index][0](ocr_val)
+
+        # json template for local storage
+        ocr_json = {
+            "type": ocr_type,
+            "val": ocr_val,
+            "xy": ocr_xy,
+            "conf": ocr_conf,
+            "attr": False
+        }
+
+        # if function was successful append the ocr json to column
+        if fmap[fnc_index][1]:
+            ocr_json['attr'] = True
+            ocr_cols.append(ocr_json)
+            fnc_index += 1
+
+        # print(json.dumps(ocr_cols, indent=2))
+
+        # check to see if all functions have completed
+        if (fmap[0][1] and fmap[1][1] and fmap[2][1]):
+            # we found all the parts so add columns to row
+            # if not task4(ocr_val):
+            #     continue
+            rows_json = {
+                "cols": ocr_cols
+            }
+
+            # append the ocr column data to row
+            ocr_rows.append(rows_json)
+            fnc_index = 0
+            fmap[0][1] = 0
+            fmap[1][1] = 0
+            fmap[2][1] = 0
+            ocr_cols = []
+    # ocr_rows.reverse()
+    
+
+    return ocr_rows
 
 def runner(patharg, inp, tid):
     global inpath, path, fnc_index, job_id, pagenum_list, filename_list
@@ -227,77 +300,14 @@ def runner(patharg, inp, tid):
 
     # for each file in the directory
     for item in filename_list:
-        # parse the page number
         pagenum = int(item.split('.')[0].split('-')[-1])
-
-        # *** the following two functions are broken out for readability ***
-        # Opens the file currently in the loop
-        tsvfile = open(os.path.join(inpath, item))
-        # Reads the tsv file and converts it to a dictionary
-        reader = csv.DictReader(tsvfile, dialect='excel-tab')
-        # loop through each row in the file
-        for row in reader:
-            # read ocr text value
-            ocr_val = row["text"]
-
-            # validate if not move to next
-            if not ocr_val:
-                continue
-            # trim and validate if not move to next
-            if not ocr_val.strip():
-                continue
-
-            # local coordinate storage for bbox
-            ocr_xy = []
-
-            # append coordiantes (bounding box)
-            ocr_xy.append([int(row['left']), int(row['width']), int(row['top']), int(row['height'])])
-            # set confidence
-            ocr_conf = int(row['conf'])
-
-            # call the current function and store the result
-            fmap[fnc_index][1] = fmap[fnc_index][0](ocr_val)
-
-            # json template for local storage
-            ocr_json = {
-                "type": ocr_type,
-                "val": ocr_val,
-                "xy": ocr_xy,
-                "conf": ocr_conf,
-                "attr": False
-            }
-
-            # if function was successful append the ocr json to column
-            if fmap[fnc_index][1]:
-                ocr_json['attr'] = True
-                ocr_cols.append(ocr_json)
-                fnc_index += 1
-
-            # print(json.dumps(ocr_cols, indent=2))
-
-            # check to see if all functions have completed
-            if (fmap[0][1] and fmap[1][1] and fmap[2][1]):
-                # we found all the parts so add columns to row
-                # if not task4(ocr_val):
-                #     continue
-                rows_json = {
-                    "cols": ocr_cols
-                }
-
-                # append the ocr column data to row
-                ocr_rows.append(rows_json)
-                fnc_index = 0
-                fmap[0][1] = 0
-                fmap[1][1] = 0
-                fmap[2][1] = 0
-                ocr_cols = []
-        # ocr_rows.reverse()
+        rows = parser(item)
         pages_json = {
             "page": pagenum + 1,
-            "rows": ocr_rows
-            }
+            "rows": rows
+        }
+        print(pages_json)
         ocr_pages.append(pages_json)
-        ocr_rows = []
 
     job_json =   {
         "job": {
@@ -306,9 +316,9 @@ def runner(patharg, inp, tid):
             "pages": ocr_pages
         }
     }
-
     # print(json.dumps(job_json, indent=2))
     # sys.exit()
+    
     job_json = post_processing(job_json)
     print("processing completed successfully")
     return job_json
