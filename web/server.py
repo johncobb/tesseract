@@ -111,12 +111,12 @@ def uploads():
     for item in request.files.getlist('file'):
         filename = secure_filename(item.filename)
         file_path = os.path.join(path, filename)
-        item.save(file_path)
+        # item.save(file_path)
         page_json = {
             "page": int(filename.split('-')[-1].split('.')[0]) + 1,
-            'rows': parser(filename, path)
+            'rows': parser(item, pat=path, tsv=True)
         }
-        os.remove(file_path)
+        # os.remove(file_path)
         job_json['job']['pages'].append(page_json)
     
     return jsonify(job_json)

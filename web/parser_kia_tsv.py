@@ -2,6 +2,8 @@ import csv, json, getopt
 import os,sys, time
 import util
 import re
+import werkzeug
+import io
 
 # Input path
 inpath = "out/tsv/"
@@ -209,7 +211,7 @@ def post_processing(json_data):
     new_json['job']['pages'] = ocr_pages
     return new_json
 
-def parser(item, pat=None):
+def parser(item, pat=None, tsv=False):
     global inpath, path, fnc_index, job_id, pagenum_list, filename_list
      # parse the page number
      
@@ -221,7 +223,11 @@ def parser(item, pat=None):
     ocr_val = ""
     # *** the following two functions are broken out for readability ***
     # Opens the file currently in the loop
-    tsvfile = open(os.path.join(inpath, item))
+    if tsv:
+        item.seek(0)
+        tsvfile = io.StringIO(item.read().decode())
+    else:
+        tsvfile = open(os.path.join(inpath, item))
     # Reads the tsv file and converts it to a dictionary
     reader = csv.DictReader(tsvfile, dialect='excel-tab')
     # loop through each row in the file
