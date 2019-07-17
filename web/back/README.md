@@ -10,6 +10,7 @@
   [Installing Requirements](#req)
   [Usage](#use)
   [Endpoints](#end)
+  [Examples](#ex)
 
 <div id='pre'>
 
@@ -65,3 +66,10 @@ python server.py
 ## Endpoints
 
 api/upload
+
+<div id='ex'>
+
+## Examples
+
+### Python Example
+Refer to test.py
