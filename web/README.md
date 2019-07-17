@@ -74,7 +74,7 @@ api/upload
 ### Python Example
 Refer to test.py
 
-Curl
+### Curl
 ```console
 curl http://0.0.0.0:3010/api/upload -F 'file=@path/to/file'
 ```
