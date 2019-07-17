@@ -15,6 +15,8 @@ import werkzeug
 from werkzeug import secure_filename
 import os
 
+from flask_restful import reqparse
+
 ENV_FILE = find_dotenv()
 if ENV_FILE:
     load_dotenv(ENV_FILE)
@@ -68,13 +70,40 @@ def build_page_list(inpath):
 
 @APP.route('/api/upload', methods=['POST', 'PUT'])
 def uploads():
+    parse = reqparse.RequestParser()
+    parse.add_argument('configid')
+    parse.add_argument('id', required=True, type=int, help='I\'m sorry but the attribute "id" is required and must be an int.')
+    
+    args = parse.parse_args()
+    
+    configid = args['configid']
+    transid = args['id']
+    
+    if not configid:
+        configid = "latest"
+    
+    if not configid.isdigit():
+        if configid.lower() == "latest":
+            configid = 1
+    
+    if not transid > -1:
+        return jsonify(message="Please make sure that transid is above -1.")
+    
     job_json = {
-        "job": {
-            "config_id": "12345678",
-            "id": 1561780205,
-            'pages': []
-        }
+        'job': {}
     }
+    
+    if isinstance(configid, str):
+        if configid.isdigit():
+            configid = int(configid)
+    
+    if configid == 1:
+        job_json['job']['configid'] = configid
+        job_json['job']['id'] = transid
+        job_json['job']['pages'] = []
+    else:
+        return jsonify(message='Please enter a valid config id.')
+    
     path = os.path.join(os.getcwd(), 'tsv')
     if not os.path.isdir(path):
         os.mkdir(path)
@@ -101,7 +130,7 @@ def upload():
     global path
     job_json = {
         "job": {
-            "config_id": "12345678",
+            "config_id": "latest",
             "id": 1561780205,
             'pages': []
         }
@@ -138,4 +167,4 @@ def upload():
 
 
 if __name__ == "__main__":
-    APP.run(host=env.get("IP", "0.0.0.0"), port=env.get("PORT", 3010))
+    APP.run(host=env.get("IP", "0.0.0.0"), port=env.get("PORT", 3010), debug=True)

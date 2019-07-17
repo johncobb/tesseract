@@ -278,11 +278,12 @@ def parser(item):
 
     return ocr_rows
 
-def runner(patharg, inp, tid):
-    global inpath, path, fnc_index, job_id, pagenum_list, filename_list
+def runner(patharg, inp, tid, configid):
+    global inpath, path, fnc_index, job_id, pagenum_list, filename_list, cfg_id
     path = patharg
     inpath = inp
     job_id = tid
+    cfg_id = configid
 
     # Concatenates the paths for easier usage
     inpath = os.path.join(path, inpath)
@@ -309,7 +310,7 @@ def runner(patharg, inp, tid):
         print(pages_json)
         ocr_pages.append(pages_json)
 
-    job_json =   {
+    job_json = {
         "job": {
             "config_id": cfg_id,
             "id": job_id,

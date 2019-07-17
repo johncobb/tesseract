@@ -8,9 +8,10 @@ path = ""
 inp = ""
 out = ""
 tid = ""
+configid = ""
 
 def argparsing(opts, args):
-    global path, inp, out, tid
+    global path, inp, out, tid, configid
     for opt, arg in opts:
         optc = opt.lower()
         if optc in ['--input', '-i']:
@@ -25,6 +26,12 @@ def argparsing(opts, args):
                 if not tidint > -1:
                     print("Error: Invalid epoch time!")
                     sys.exit(1)
+        elif optc in ['--configid', '-c']:
+            if arg.isdigit():
+                if int(arg) > 0:
+                    configid = arg
+            elif arg.lower() == 'latest':
+                configid = 1
 
 def saveJson(json_data):
     global path, inp, out, tid
@@ -42,14 +49,14 @@ if __name__ == "__main__":
         print("Error: No arguments provided!")
         sys.exit(1)
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'p:i:o:t:', ['--path', '--input', '--output', '--tid'])
+        opts, args = getopt.getopt(sys.argv[1:], 'p:i:o:t:c:', ['--path', '--input', '--output', '--tid', '--configid'])
     except getopt.GetoptError as e:
         print("Error: Invalid arguments!")
         sys.exit(1)
 
     argparsing(opts, args)
 
-    json_data = runner(path, inp, tid)
+    json_data = runner(path, inp, tid, configid)
 
     saveJson(json_data)
 
