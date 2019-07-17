@@ -1,44 +1,37 @@
-import os, requests, json
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
-from werkzeug import secure_filename
+from functools import wraps
+import json
+from six.moves.urllib.request import urlopen
+
+from flask import Flask, request, jsonify, render_template
 
 from os import environ as env
 from dotenv import load_dotenv, find_dotenv
+
+from collections import defaultdict
+
+from flask_cors import CORS
+from parser_kia_tsv import parser, post_processing
+import werkzeug
+from werkzeug import secure_filename
+import os
 
 ENV_FILE = find_dotenv()
 if ENV_FILE:
     load_dotenv(ENV_FILE)
 
-# Initialize the Flask application
-app = Flask(__name__)
-
 path = os.path.join(os.getcwd(), 'tsv')
 if not os.path.isdir(path):
     os.mkdir(path)
-    
-# This is the path to the upload directory
-app.config['UPLOAD_FOLDER'] = 'tsv/'
-# These are the extension that we are accepting to be uploaded
-app.config['ALLOWED_EXTENSIONS'] = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
-# For a given file, return whether it's an allowed type or not
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1] in app.config['ALLOWED_EXTENSIONS']
-
-# This route will show a form to perform an AJAX request
-# jQuery is loaded to execute the request and update the
-# value of the operation
-@app.route('/')
-def index():
-    return render_template('index.html')
+APP = Flask(__name__)
+CORS(APP)
 
 def build_page_list(inpath):
-    filename_list = []
+    ignore_files = ["final.tsv", ".gitignore"]
     pagenum_list = []
+    filename_list = []
     filename_prefix = ""
     filename_ext = ""
-    ignore_files = ["final.tsv", ".gitignore"]
     # Gets the page numbers
     for filename in os.listdir(inpath):
         # Sets the filename_prefix variable and file_extension variable
@@ -50,11 +43,12 @@ def build_page_list(inpath):
         
         if not filename_prefix:
             filename_prefix = filename.split('-')[0]
+        
         if not filename_ext:
             filename_ext = "." + filename.split('.')[-1]
-        
         # Gets the page number from the file name
-        page_num = filename.split('-')[-1].split('.')[0]       
+        page_num = filename.split('-')[-1].split('.')[0]
+
         # Makes sure page_num isn't empty
         if not page_num:
             continue
@@ -71,10 +65,47 @@ def build_page_list(inpath):
         
     return filename_list
 
-# Route that will process the file upload
-@app.route('/upload', methods=['POST'])
+
+@APP.route('/api/upload', methods=['POST', 'PUT'])
+def uploads():
+    job_json = {
+        "job": {
+            "config_id": "12345678",
+            "id": 1561780205,
+            'pages': []
+        }
+    }
+    path = os.path.join(os.getcwd(), 'tsv')
+    if not os.path.isdir(path):
+        os.mkdir(path)
+    
+    for item in request.files.getlist('file'):
+        filename = secure_filename(item.filename)
+        file_path = os.path.join(path, filename)
+        item.save(file_path)
+        page_json = {
+            "page": int(filename.split('-')[-1].split('.')[0]) + 1,
+            'rows': parser(filename, path)
+        }
+        
+        job_json['job']['pages'].append(page_json)
+    
+    return jsonify(job_json)
+
+@APP.route('/')
+def index():
+    return render_template('index.html')
+
+@APP.route('/upload', methods=['POST'])
 def upload():
     global path
+    job_json = {
+        "job": {
+            "config_id": "12345678",
+            "id": 1561780205,
+            'pages': []
+        }
+    }
     # Get the name of the uploaded files
     uploaded_files = request.files.getlist("file[]")
     filenames = []
@@ -90,30 +121,21 @@ def upload():
         # Redirect the user to the uploaded_file route, which
         # will basicaly show on the browser the uploaded file
         
-    filenames = build_page_list(path)
-    request_list = []
+    filenames = build_page_list(inpath=path)
+    
     for item in filenames:
-        request_list.append(('file', open(os.path.join(path, item), 'rb')))
+        file_path = os.path.join(path, item)
+        page_json = {
+            'page': int(item.split('-')[-1].split('.')[0]),
+            'rows': parser(item, path)
+        }
+        
+        job_json['job']['pages'].append(page_json)
     
-    r = requests.post('http://0.0.0.0:3010/api/upload', files=request_list)
-    
-    response = json.dumps(r.json(), sort_keys=False, indent=4)
-    
+    response = json.dumps(job_json, indent=4)
     # Load an html page with a link to each uploaded file
-    return render_template('upload.html', filenames=filenames, response=response)
+    return render_template('upload.html', response=response)
 
-# This route is expecting a parameter containing the name
-# of a file. Then it will locate that file on the upload
-# directory and show it on the browser, so if the user uploads
-# an image, that image is going to be show after the upload
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'],
-                               filename)
 
-if __name__ == '__main__':
-    app.run(
-        host=env.get("IP", "0.0.0.0"),
-        port=env.get("PORT", 5000),
-        debug=True
-    )
+if __name__ == "__main__":
+    APP.run(host=env.get("IP", "0.0.0.0"), port=env.get("PORT", 3010), debug=True)

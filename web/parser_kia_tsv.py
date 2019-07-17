@@ -103,6 +103,7 @@ def build_sample_output():
 
 def build_page_list():
     global filename_list, inpath
+    
     # Gets the page numbers
     for filename in os.listdir(inpath):
         # Sets the filename_prefix variable and file_extension variable
