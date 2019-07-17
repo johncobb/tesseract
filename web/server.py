@@ -87,7 +87,7 @@ def uploads():
             "page": int(filename.split('-')[-1].split('.')[0]) + 1,
             'rows': parser(filename, path)
         }
-        
+        os.remove(file_path)
         job_json['job']['pages'].append(page_json)
     
     return jsonify(job_json)
@@ -129,7 +129,7 @@ def upload():
             'page': int(item.split('-')[-1].split('.')[0]),
             'rows': parser(item, path)
         }
-        
+        os.remove(os.path.join(path, item))
         job_json['job']['pages'].append(page_json)
     
     response = json.dumps(job_json, indent=4)
@@ -138,4 +138,4 @@ def upload():
 
 
 if __name__ == "__main__":
-    APP.run(host=env.get("IP", "0.0.0.0"), port=env.get("PORT", 3010), debug=True)
+    APP.run(host=env.get("IP", "0.0.0.0"), port=env.get("PORT", 3010))
