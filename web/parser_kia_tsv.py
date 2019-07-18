@@ -243,7 +243,7 @@ def parser(item, pat=None, tsv=False):
             continue
 
         # append coordiantes (bounding box)
-        ocr_xy = [int(row['left']), int(row['width']), int(row['top']), int(row['height'])]
+        ocr_xy = [int(row['left']), int(row['top']), int(row['width']), int(row['height'])]
         # set confidence
         ocr_conf = int(row['conf'])
 
@@ -270,8 +270,6 @@ def parser(item, pat=None, tsv=False):
         # check to see if all functions have completed
         if (fmap[0][1] and fmap[1][1] and fmap[2][1]):
             # we found all the parts so add columns to row
-            # if not task4(ocr_val):
-            #     continue
             rows_json = {
                 "cols": ocr_cols
             }
@@ -283,8 +281,6 @@ def parser(item, pat=None, tsv=False):
             fmap[1][1] = 0
             fmap[2][1] = 0
             ocr_cols = []
-    # ocr_rows.reverse()
-    
 
     return ocr_rows
 
