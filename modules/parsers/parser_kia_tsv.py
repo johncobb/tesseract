@@ -208,7 +208,7 @@ def post_processing(json_data):
     new_json['job']['pages'] = ocr_pages
     return new_json
 
-def parser(item):
+def parser(item, tsv=False):
     global inpath, path, fnc_index, job_id, pagenum_list, filename_list
      # parse the page number
     
@@ -216,9 +216,13 @@ def parser(item):
     ocr_cols = []
     ocr_val = ""
     # *** the following two functions are broken out for readability ***
-    # Opens the file currently in the loop
-    tsvfile = open(os.path.join(inpath, item))
+    if tsv:
+        tsvfile = item
+    else:
+        # Opens the file currently in the loop
+        tsvfile = open(os.path.join(inpath, item))
     # Reads the tsv file and converts it to a dictionary
+    
     reader = csv.DictReader(tsvfile, dialect='excel-tab')
     # loop through each row in the file
     for row in reader:
@@ -233,7 +237,8 @@ def parser(item):
             continue
 
         # append coordiantes (bounding box)
-        ocr_xy = [int(row['left']), int(row['width']), int(row['top']), int(row['height'])]
+        ocr_xy = [int(row['left']), int(row['top']), int(row['width']), int(row['height'])]
+        print(ocr_xy)
         # set confidence
         ocr_conf = int(row['conf'])
 
@@ -307,7 +312,6 @@ def runner(patharg, inp, tid, configid):
             "page": pagenum + 1,
             "rows": rows
         }
-        print(pages_json)
         ocr_pages.append(pages_json)
 
     job_json = {
