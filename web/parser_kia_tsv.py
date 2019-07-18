@@ -62,7 +62,7 @@ def build_sample_output():
 
     ocr_type = "text"
     ocr_val = "5XXGT4L30GG032037"
-    ocr_xy =[[100,200,100,300], [100,200,100,300]]
+    ocr_bbox =[[100,200,100,300], [100,200,100,300]]
     ocr_conf = 90
     ocr_attr = [True]
 
@@ -73,7 +73,7 @@ def build_sample_output():
     ocr_json = {
         "type": ocr_type,
         "val": ocr_val,
-        "xy": ocr_xy,
+        "bbox": ocr_bbox,
         "conf": ocr_conf
     }
     # append the ocr json to column
@@ -156,12 +156,12 @@ def post_processing(json_data):
             if len(row['cols']) == 3:
 
                 vin = row['cols'][index_header]['val'] + row['cols'][index_footer]['val']
-                vin_header_xy = row['cols'][index_header]['xy']
-                vin_footer_xy = row['cols'][index_footer]['xy']
+                vin_header_bbox = row['cols'][index_header]['bbox']
+                vin_footer_bbox = row['cols'][index_footer]['bbox']
 
                 valid = util.ValidateVIN(vin)
                 balance = row['cols'][index_balance]['val']
-                bal_xy = row['cols'][index_balance]['xy']
+                bal_bbox = row['cols'][index_balance]['bbox']
 
                 conf.append(row['cols'][index_header]['conf'])
                 conf.append(row['cols'][index_footer]['conf'])
@@ -173,7 +173,7 @@ def post_processing(json_data):
                 ocr_col = {
                     'type': 'text',
                     'val': vin,
-                    'xy': [vin_header_xy, vin_footer_xy],
+                    'bbox': [vin_header_bbox, vin_footer_bbox],
                     'conf': conf,
                     'attr': vin_attr
                 }
@@ -181,7 +181,7 @@ def post_processing(json_data):
                 ocr_col2 = {
                     'type': 'number',
                     'val': balance,
-                    'xy': [bal_xy],
+                    'bbox': [bal_bbox],
                     'conf': [bal_conf],
                     'attr': bal_attr
                 }
@@ -243,7 +243,7 @@ def parser(item, pat=None, tsv=False):
             continue
 
         # append coordiantes (bounding box)
-        ocr_xy = [int(row['left']), int(row['top']), int(row['width']), int(row['height'])]
+        ocr_bbox = [int(row['left']), int(row['top']), int(row['width']), int(row['height'])]
         # set confidence
         ocr_conf = int(row['conf'])
 
@@ -254,7 +254,7 @@ def parser(item, pat=None, tsv=False):
         ocr_json = {
             "type": ocr_type,
             "val": ocr_val,
-            "xy": ocr_xy,
+            "bbox": ocr_bbox,
             "conf": ocr_conf,
             "attr": False
         }
