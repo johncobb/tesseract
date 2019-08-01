@@ -159,7 +159,7 @@ def post_processing(json_data):
 
         for row in page['rows']:
             conf = []
-            if len(row['cols']) == 4:
+            if len(row['cols']) > 2 and len(row['cols']) < 5:
 
                 vin = row['cols'][index_header]['val'] + row['cols'][index_footer]['val']
                 vin_header_bbox = row['cols'][index_header]['bbox']
@@ -176,11 +176,6 @@ def post_processing(json_data):
 
                 vin_attr = valid[0]
                 bal_attr = row['cols'][index_balance]['attr']
-                
-                date = row['cols'][index_date]['val']
-                date_bbox = row['cols'][index_date]['bbox']
-                date_conf = row['cols'][index_date]['conf']
-                date_attr = row['cols'][index_date]['attr']
 
                 ocr_col = {
                     'type': 'text',
@@ -197,19 +192,24 @@ def post_processing(json_data):
                     'conf': [bal_conf],
                     'attr': bal_attr
                 }
-                
-                ocr_col3 = {
-                    'type': 'date',
-                    'val': date,
-                    'bbox': [date_bbox],
-                    'conf': [date_conf],
-                    'attr': date_attr
-                }
 
 
                 ocr_cols.append(ocr_col)
                 ocr_cols.append(ocr_col2)
-                ocr_cols.append(ocr_col3)
+                if len(row['cols']) == 4:
+                    date = row['cols'][index_date]['val']
+                    date_bbox = row['cols'][index_date]['bbox']
+                    date_conf = row['cols'][index_date]['conf']
+                    date_attr = row['cols'][index_date]['attr']
+                    
+                    ocr_col3 = {
+                        'type': 'date',
+                        'val': date,
+                        'bbox': [date_bbox],
+                        'conf': [date_conf],
+                        'attr': date_attr
+                    }
+                    ocr_cols.append(ocr_col3)
                 ocr_col = {}
                 ocr_col2 = {}
 
