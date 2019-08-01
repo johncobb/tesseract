@@ -5,6 +5,9 @@ import re
 import werkzeug
 import io
 
+# date regex:
+# ^((((0[13578])|([13578])|(1[02]))[\/](([1-9])|([0-2][0-9])|(3[01])))|(((0[469])|([469])|(11))[\/](([1-9])|([0-2][0-9])|(30)))|((2|02)[\/](([1-9])|([0-2][0-9]))))[\/]\d{4}$|^\d{4}$
+
 # Input path
 inpath = "out/tsv/"
 # Root directory path
@@ -48,6 +51,14 @@ def task3(ocr_val):
         return True
     else:
         return False
+    
+def task4(ocr_val):
+    global ocr_type
+    if re.match(r"^((((0[13578])|([13578])|(1[02]))[\/](([1-9])|([0-2][0-9])|(3[01])))|(((0[469])|([469])|(11))[\/](([1-9])|([0-2][0-9])|(30)))|((2|02)[\/](([1-9])|([0-2][0-9]))))[\/]\d{4}$|^\d{4}$", ocr_val):
+        ocr_type = 'date'
+        return True
+    else:
+        return False
 
 # reference to index of function being called
 fnc_index = 0
@@ -56,7 +67,8 @@ fnc_index = 0
 fmap = {0: [task1, 0],
     1: [task2, 0],
     2: [task3, 0],
-    3:0}
+    3: [task4, 0],
+    4: 0}
 
 def build_sample_output():
 
@@ -148,6 +160,7 @@ def post_processing(json_data):
     index_header = 0
     index_footer = 1
     index_balance = 2
+    index_date = 3
 
     for page in json_data['job']['pages']:
 
@@ -158,6 +171,7 @@ def post_processing(json_data):
                 vin = row['cols'][index_header]['val'] + row['cols'][index_footer]['val']
                 vin_header_bbox = row['cols'][index_header]['bbox']
                 vin_footer_bbox = row['cols'][index_footer]['bbox']
+                
 
                 valid = util.ValidateVIN(vin)
                 balance = row['cols'][index_balance]['val']
@@ -169,6 +183,11 @@ def post_processing(json_data):
 
                 vin_attr = valid[0]
                 bal_attr = row['cols'][index_balance]['attr']
+                
+                date = row['cols'][index_date]['val']
+                date_bbox = row['cols'][index_date]['bbox']
+                date_conf = row['cols'][index_date]['conf']
+                date_attr = row['cols'][index_date]['attr']
 
                 ocr_col = {
                     'type': 'text',
@@ -185,10 +204,19 @@ def post_processing(json_data):
                     'conf': [bal_conf],
                     'attr': bal_attr
                 }
+                
+                ocr_col3 = {
+                    'type': 'date',
+                    'val': date,
+                    'bbox': [date_bbox],
+                    'conf': [date_conf],
+                    'attr': date_attr
+                }
 
 
                 ocr_cols.append(ocr_col)
                 ocr_cols.append(ocr_col2)
+                ocr_cols.append(ocr_col3)
                 ocr_col = {}
                 ocr_col2 = {}
 
@@ -268,7 +296,7 @@ def parser(item, pat=None, tsv=False):
         # print(json.dumps(ocr_cols, indent=2))
 
         # check to see if all functions have completed
-        if (fmap[0][1] and fmap[1][1] and fmap[2][1]):
+        if (fmap[0][1] and fmap[1][1] and fmap[2][1] or fmap[3][1]):
             # we found all the parts so add columns to row
             rows_json = {
                 "cols": ocr_cols
@@ -280,6 +308,7 @@ def parser(item, pat=None, tsv=False):
             fmap[0][1] = 0
             fmap[1][1] = 0
             fmap[2][1] = 0
+            fmap[3][1] = 0
             ocr_cols = []
 
     return ocr_rows
