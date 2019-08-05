@@ -31,33 +31,30 @@ def task1(ocr_val):
     if len(ocr_val) == 11:
         ocr_type = "text"
         return True
+    return False
 
 def task2(ocr_val):
     global ocr_type
     if len(ocr_val) == 6 and ocr_val.isdigit():
         ocr_type = "text"
         return True
+    return False
 
 def task3(ocr_val):
     global ocr_type
-    regex = r"^"
-    if re.match(r"^((((0[13578])|([13578])|(1[02]))[\/](([1-9])|([0-2][0-9])|(3[01])))|(((0[469])|([469])|(11))[\/](([1-9])|([0-2][0-9])|(30)))|((2|02)[\/](([1-9])|([0-2][0-9]))))[\/]\d{4}$|^\d{4}$", ocr_val) \
-        or re.match(r"^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])/(?:[0-9]{2})?[0-9]{2}$", ocr_val) \
-            or re.match(r'^(?:(?:(?:0?[13578]|1[02])(\/|-|\.)31)\1|(?:(?:0?[1,3-9]|1[0-2])(\/|-|\.)(?:29|30)\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:0?2(\/|-|\.)29\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:(?:0?[1-9])|(?:1[0-2]))(\/|-|\.)(?:0?[1-9]|1\d|2[0-8])\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$', ocr_val):
+    if re.match(r'^(?:(?:(?:0?[13578]|1[02])(\/|-|\.)31)\1|(?:(?:0?[1,3-9]|1[0-2])(\/|-|\.)(?:29|30)\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:0?2(\/|-|\.)29\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:(?:0?[1-9])|(?:1[0-2]))(\/|-|\.)(?:0?[1-9]|1\d|2[0-8])\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$', ocr_val):
         ocr_type = 'date'
         return True
-    else:
-        return False
-    
+    return False
+
 def task4(ocr_val):
     global ocr_type
     # ^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}$
     if re.match(r'^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}', ocr_val):
         ocr_type = 'number'
         return True
-    else:
-        return False
-    
+    return False
+
 # reference to index of function being called
 fnc_index = 0
 
@@ -67,6 +64,7 @@ fmap = {0: [task1, 0],
     2: [task3, 0],
     3: [task4, 0],
     4: 0}
+
 def build_sample_output():
 
     ocr_type = "text"
@@ -162,7 +160,8 @@ def post_processing(json_data):
 
         for row in page['rows']:
             conf = []
-            if len(row['cols']) > 2 and len(row['cols']) < 5:
+            # if len(row['cols']) > 2 and len(row['cols']) < 5:
+            if len(row['cols']) == 4:
 
                 vin = row['cols'][index_header]['val'] + row['cols'][index_footer]['val']
                 vin_header_bbox = row['cols'][index_header]['bbox']
@@ -179,6 +178,11 @@ def post_processing(json_data):
 
                 vin_attr = valid[0]
                 bal_attr = row['cols'][index_balance]['attr']
+                
+                date = row['cols'][index_date]['val']
+                date_bbox = row['cols'][index_date]['bbox']
+                date_conf = row['cols'][index_date]['conf']
+                date_attr = row['cols'][index_date]['attr']
 
                 ocr_col = {
                     'type': 'text',
@@ -195,24 +199,20 @@ def post_processing(json_data):
                     'conf': [bal_conf],
                     'attr': bal_attr
                 }
-
+                
+                ocr_col3 = {
+                    'type': 'date',
+                    'val': date,
+                    'bbox': [date_bbox],
+                    'conf': [date_conf],
+                    'attr': date_attr
+                }
 
                 ocr_cols.append(ocr_col)
                 ocr_cols.append(ocr_col2)
-                if len(row['cols']) == 4:
-                    date = row['cols'][index_date]['val']
-                    date_bbox = row['cols'][index_date]['bbox']
-                    date_conf = row['cols'][index_date]['conf']
-                    date_attr = row['cols'][index_date]['attr']
-                    
-                    ocr_col3 = {
-                        'type': 'date',
-                        'val': date,
-                        'bbox': [date_bbox],
-                        'conf': [date_conf],
-                        'attr': date_attr
-                    }
-                    ocr_cols.append(ocr_col3)
+                # if len(row['cols']) == 4:
+                
+                ocr_cols.append(ocr_col3)
                 ocr_col = {}
                 ocr_col2 = {}
 
@@ -263,7 +263,6 @@ def parser(item, tsv=False):
         # trim and validate if not move to next
         if not ocr_val.strip():
             continue
-
         # append coordiantes (bounding box)
         ocr_bbox = [int(row['left']), int(row['top']), int(row['width']), int(row['height'])]
         # set confidence
@@ -291,6 +290,8 @@ def parser(item, tsv=False):
 
         # check to see if all functions have completed
         if (fmap[0][1] and fmap[1][1] and fmap[2][1] and fmap[3][1]):
+            # print(ocr_cols)
+            # sys.exit()
             # we found all the parts so add columns to row
             rows_json = {
                 "cols": ocr_cols
