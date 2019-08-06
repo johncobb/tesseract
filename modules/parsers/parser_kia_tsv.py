@@ -50,7 +50,7 @@ def task3(ocr_val):
 def task4(ocr_val):
     global ocr_type
     # ^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}$
-    if re.match(r'^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}', ocr_val):
+    if re.match(r'^\$?[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}?$', ocr_val):
         ocr_type = 'number'
         return True
     return False
@@ -153,8 +153,8 @@ def post_processing(json_data):
 
     index_header = 0
     index_footer = 1
-    index_balance = 2
-    index_date = 3
+    index_date = 2
+    index_balance = 3
 
     for page in json_data['job']['pages']:
 
@@ -281,17 +281,40 @@ def parser(item, tsv=False):
         }
 
         # if function was successful append the ocr json to column
-        if fmap[fnc_index][1]:
+        if fmap[fnc_index][1]:        
             ocr_json['attr'] = True
-            ocr_cols.append(ocr_json)
+            ocr_cols.append(ocr_json)                
             fnc_index += 1
+        else:
+            if fmap[0][1] and fmap[1][1] and fnc_index == 2:
+                if ocr_val.find('/') > -1 or ocr_val.find('-') > -1 or (ocr_val.find('.') > -1 and ocr_val.count('.') == 2):
+                    ocr_json['attr'] = False
+                    ocr_json['type'] = 'date'
+                    fmap[fnc_index][1] = True
+                    ocr_cols.append(ocr_json)
+                    fnc_index += 1
+            elif fmap[2][1] and fnc_index == 3:
+                found_ds = ocr_val.find('$')
+                found_pe = ocr_val.find('.')
+                found_co = ocr_val.find(',')
+                
+                if found_ds > -1 and (found_co > -1 or found_pe > -1):
+                    ocr_json['type'] = 'number'
+                    ocr_json['attr'] = False
+                    fmap[fnc_index][1] = True
+                    ocr_cols.append(ocr_json)
+                    fnc_index += 1
+                elif found_co > -1 or found_pe > -1:
+                    ocr_json['type'] = 'number'
+                    ocr_json['attr'] = False
+                    fmap[fnc_index][1] = True
+                    ocr_cols.append(ocr_json)
+                    fnc_index += 1
 
         # print(json.dumps(ocr_cols, indent=2))
 
         # check to see if all functions have completed
         if (fmap[0][1] and fmap[1][1] and fmap[2][1] and fmap[3][1]):
-            # print(ocr_cols)
-            # sys.exit()
             # we found all the parts so add columns to row
             rows_json = {
                 "cols": ocr_cols
