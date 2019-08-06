@@ -279,16 +279,21 @@ def parser(item, tsv=False):
             "conf": ocr_conf,
             "attr": False
         }
-
+        
         # if function was successful append the ocr json to column
         if fmap[fnc_index][1]:        
             ocr_json['attr'] = True
+            if ocr_val.find('=') > -1:
+                print(ocr_val)
             ocr_cols.append(ocr_json)                
             fnc_index += 1
         else:
             if fmap[0][1] and fmap[1][1] and fnc_index == 2 and len(ocr_val) > 5 and len(ocr_val) < 12:
-                num1 = ocr_val[0:2]
-                if ocr_val.find('/') > -1 or ocr_val.find('-') > -1 or (ocr_val.find('.') > -1 and ocr_val.count('.') == 2) and num1.isdigit():
+                # num1 = ocr_val[0:2]
+                # print(num1)
+                # print(type(num1))
+                # print(num1.isdigit())
+                if ocr_val.find('/') > -1 or ocr_val.find('-') > -1 or ocr_val.count('.') == 2:
                     ocr_json['attr'] = False
                     ocr_json['type'] = 'date'
                     fmap[fnc_index][1] = True

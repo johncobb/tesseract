@@ -23,9 +23,7 @@ class TestChecks(unittest.TestCase):
         number = input('\nEnter the balance of the vin. ')
         
         self.assertTrue(re.match(r'^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}', number))
-       # 5XYPK4A53KG
-       # 448403
-       # 49,984.00
+        
     def test_vin_validation(self):
         vin = input('\nEnter the vin you wish to be validated. ')
         valid = util.ValidateVIN(vin)
