@@ -42,7 +42,7 @@ def task2(ocr_val):
 
 def task3(ocr_val):
     global ocr_type
-    if re.match(r'^(?:(?:(?:0?[13578]|1[02])(\/|-|\.)31)\1|(?:(?:0?[1,3-9]|1[0-2])(\/|-|\.)(?:29|30)\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:0?2(\/|-|\.)29\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:(?:0?[1-9])|(?:1[0-2]))(\/|-|\.)(?:0?[1-9]|1\d|2[0-8])\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$', ocr_val):
+    if re.match(r'^(?:(?:(?:0?[13578]|1[02])(\/|-|\.)31)\1|(?:(?:0?[1,3-9]|1[0-2])(\/|-|\.)(?:29|30)\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:0?2(\/|-|\.)29\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:(?:0?[1-9])|(?:1[0-2]))(\/|-|\.)(?:0?[1-9]|1\d|2[0-8])\4(?:(?:1[6-9]|[2-9]\d)?\d{2})', ocr_val):
         ocr_type = 'date'
         return True
     return False
@@ -286,8 +286,9 @@ def parser(item, tsv=False):
             ocr_cols.append(ocr_json)                
             fnc_index += 1
         else:
-            if fmap[0][1] and fmap[1][1] and fnc_index == 2:
-                if ocr_val.find('/') > -1 or ocr_val.find('-') > -1 or (ocr_val.find('.') > -1 and ocr_val.count('.') == 2):
+            if fmap[0][1] and fmap[1][1] and fnc_index == 2 and len(ocr_val) > 5 and len(ocr_val) < 12:
+                num1 = ocr_val[0:2]
+                if ocr_val.find('/') > -1 or ocr_val.find('-') > -1 or (ocr_val.find('.') > -1 and ocr_val.count('.') == 2) and num1.isdigit():
                     ocr_json['attr'] = False
                     ocr_json['type'] = 'date'
                     fmap[fnc_index][1] = True
