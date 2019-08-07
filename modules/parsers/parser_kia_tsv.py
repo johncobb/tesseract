@@ -191,16 +191,8 @@ def post_processing(json_data):
                     'conf': conf,
                     'attr': vin_attr
                 }
-
-                ocr_col2 = {
-                    'type': 'number',
-                    'val': balance,
-                    'bbox': [bal_bbox],
-                    'conf': [bal_conf],
-                    'attr': bal_attr
-                }
                 
-                ocr_col3 = {
+                ocr_col2 = {
                     'type': 'date',
                     'val': date,
                     'bbox': [date_bbox],
@@ -208,11 +200,20 @@ def post_processing(json_data):
                     'attr': date_attr
                 }
 
+                ocr_col3 = {
+                    'type': 'number',
+                    'val': balance,
+                    'bbox': [bal_bbox],
+                    'conf': [bal_conf],
+                    'attr': bal_attr
+                }
+
                 ocr_cols.append(ocr_col)
                 ocr_cols.append(ocr_col2)
+                ocr_cols.append(ocr_col3)
                 # if len(row['cols']) == 4:
                 
-                ocr_cols.append(ocr_col3)
+                
                 ocr_col = {}
                 ocr_col2 = {}
 
