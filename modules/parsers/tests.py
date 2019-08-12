@@ -2,6 +2,24 @@ import unittest
 import re
 import util
 
+date = '2/29/20'
+year = date[-4:]
+
+def check_month(month):
+    return month > 0 and month <= 12
+
+def check_leap_year(year):
+    if (year % 4) == 0:
+        if (year % 100) == 0:
+            if (year % 400) == 0:
+                return True
+            else:
+                return False
+        else:
+            return True
+    else:
+        return False
+
 class TestChecks(unittest.TestCase):
     
     def test_date(self):
@@ -21,13 +39,62 @@ class TestChecks(unittest.TestCase):
         
     def test_number(self):
         number = input('\nEnter the balance of the vin. ')
-        
-        self.assertTrue(re.match(r'^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}', number))
+        digi = number.replace('.', '').replace(',', '').replace('€', '').replace('$', '').replace('EUR', '').replace('USD', '').replace('Euro', '').replace('Dollar', '').isdigit()
+        self.assertTrue(re.match(r'(\d+([.,]?)\d{0,}([.,]?)\d*(\s*)(\$|€|EUR|USD|Euro|Dollar))|((\$|€|EUR|USD|Euro|Dollar)(\s*)\d+([.,]?\d{0,}([.,]?)\d*))|((\s*)\d+([.,]?\d{0,}([.,]?)\d*))$', number) and digi)
         
     def test_vin_validation(self):
         vin = input('\nEnter the vin you wish to be validated. ')
         valid = util.ValidateVIN(vin)
         self.assertTrue(valid[0])
+    
+    def test_check_day(self):
+        global date, year
         
+        
+        month = date[0:2]
+        day = date[3:5]
+        
+        if not day.isdigit():
+            day = int(day[0])
+            
+        if not month.isdigit():
+            month = int(month[0])
+        
+        if (year.find('/') > -1 or year.find('.') > -1 or year.find('-') > -1):
+            for item in year:
+                if item == '/' or item == '.' or item == '-':
+                    index = year.index(item) + 1
+                    break
+        leap_year = check_leap_year(int(year[index:]))
+        
+        monthlist = {
+            '31': [1, 3, 5, 7, 8, 10, 12],
+            '30': [4, 6, 9, 11],
+            '28': [2]
+        }
+        
+        if not check_month(month):
+            return (False, 'Invalid month')
+        
+        if month in monthlist['31']:
+            self.assertTrue(day >= 1 and day <= 31)
+        elif month in monthlist['30']:
+            self.assertTrue(day >= 1 and day <= 30)
+        elif month in monthlist['28'] and not leap_year:
+            self.assertTrue(day >= 1 and day <= 28)
+        elif month in monthlist['28'] and leap_year:
+            self.assertTrue(day >= 1 and day <= 29)
+            # self.assertTrue(len(year[index:]) >= 1 and len(year[index:]) <= 4)
+
+    def test_year(self):
+        global year
+        if (year.find('/') > -1 or year.find('.') > -1 or year.find('-') > -1):
+            for item in year:
+                if item == '/' or item == '.' or item == '-':
+                    index = year.index(item) + 1
+                    break
+                
+        self.assertTrue(len(year[index:]) >= 1 and len(year[index:]) <= 4)
+
 if __name__ == '__main__':
     unittest.main()

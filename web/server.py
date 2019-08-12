@@ -11,9 +11,12 @@ from collections import defaultdict
 
 from flask_cors import CORS
 from parser_kia_tsv import parser, post_processing
+from parser_kia_json import processing
 import werkzeug
 from werkzeug import secure_filename
 import os
+
+import calendar, time
 
 from flask_restful import reqparse
 
@@ -34,11 +37,15 @@ def build_page_list(inpath):
     filename_list = []
     filename_prefix = ""
     filename_ext = ""
+    
     # Gets the page numbers
     for filename in os.listdir(inpath):
+        print(type(filename))
         # Sets the filename_prefix variable and file_extension variable
-        if not os.path.isfile(os.path.join(inpath, filename)):
-            continue
+        if isinstance(filename, str):
+            if not os.path.isfile(os.path.join(inpath, filename)):
+                continue
+        
         if filename in ignore_files:
             print("ignore file: ", filename)
             continue
@@ -114,7 +121,7 @@ def uploads():
         # item.save(file_path)
         page_json = {
             "page": int(filename.split('-')[-1].split('.')[0]) + 1,
-            'rows': parser(item, pat=path, tsv=True)
+            'rows': processing(item, pat=path, tsv=True)
         }
         # os.remove(file_path)
         job_json['job']['pages'].append(page_json)
@@ -128,37 +135,37 @@ def index():
 @APP.route('/upload', methods=['POST'])
 def upload():
     global path
+    cfg_id = request.form.get('version')
+    if cfg_id.isdigit():
+        cfg_id = int(cfg_id)
+    else:
+        return jsonify(message="Please make sure the version is a number.")
     job_json = {
         "job": {
-            "config_id": "latest",
-            "id": 1561780205,
+            "config_id": cfg_id,
+            "id": calendar.timegm(time.gmtime()),
             'pages': []
         }
     }
     # Get the name of the uploaded files
     uploaded_files = request.files.getlist("file[]")
-    filenames = []
     
-    for file in uploaded_files:
-        # Make the filename safe, remove unsupported chars
-        filename = secure_filename(file.filename)
-        # Move the file form the temporal folder to the upload
-        # folder we setup
-        file.save(os.path.join(path, filename))
-        # Save the filename into a list, we'll use it later
-        filenames.append(filename)
-        # Redirect the user to the uploaded_file route, which
-        # will basicaly show on the browser the uploaded file
-        
-    filenames = build_page_list(inpath=path)
+    if not uploaded_files[0].filename:
+        return jsonify(message='Please select files to upload!')
     
-    for item in filenames:
-        file_path = os.path.join(path, item)
-        page_json = {
-            'page': int(item.split('-')[-1].split('.')[0]),
-            'rows': parser(item, path)
-        }
-        os.remove(os.path.join(path, item))
+    for item in uploaded_files:
+        file_ext = item.filename.split('.')[-1]
+        if file_ext.lower() == 'json':
+            page_json = {
+                'page': int(item.filename.split('-')[-1].split('.')[0]),
+                'rows': parser(item, tsv=True)
+            }
+        elif file_ext.lower() == 'tsv':
+            page_json = {
+                'page': int(item.filename.split('-')[-1].split('.')[0]),
+                'rows': parser(item, tsv=True)
+            }
+        # os.remove(os.path.join(path, item))
         job_json['job']['pages'].append(page_json)
     
     response = json.dumps(job_json, indent=4)

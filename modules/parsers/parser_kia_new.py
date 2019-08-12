@@ -18,6 +18,7 @@ class Kia(ParserAbstract):
                 continue
             if (c.isupper()):
                 allUpper += c
+        
         return allUpper
 
     def parse(self, file):
@@ -44,6 +45,38 @@ class Kia(ParserAbstract):
                     serial = self.removeLowerCase(serial)
                     self.parseReord(wmivds, serial, current_principal)
                     
+    def fixVIN(self, vin='', first11='', last6=''):
+        ocr_common_error = {"WMIVDS": [["SX", "5X"], ["3KP", "5X"]]}
+        
+        
+        if not vin:
+            if not first11 or not last6:
+                return (False, 'Error: Vin, first 11 characters or last 6 characters must be passed in.', '')
+            
+            vin = first11 + str(last6)
+        
+        vin = self.removeLowerCase(vin)
+        print(vin, " is vin")
+        if not len(vin) == 17:
+            return (False, 'Vin must be length 17', vin)
+        
+        for key in self.blacklist:
+            vin = vin.replace(key[0], key[1])
+        
+        result = ValidateVIN(vin)
+        
+        if result[0]:
+            return (True, 'Passed', vin)
+        else:
+            for key in ocr_common_error['WMIVDS']:
+                vin = vin.replace(key[0], key[1])
+            
+            result = ValidateVIN(vin)
+            
+            if result[0]:
+                return (True, 'Passed', vin)
+            
+            return (False, 'Error: Invalid', vin)
 
     def parseReord(self, wmivds, serial, current_principal):
 

@@ -49,8 +49,8 @@ def task3(ocr_val):
 
 def task4(ocr_val):
     global ocr_type
-    # ^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}$
-    if re.match(r'^\$?[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}?$', ocr_val):
+    # digi = ocr_val.replace('.', '').replace(',', '').replace('€', '').replace('$', '').replace('EUR', '').replace('USD', '').replace('Euro', '').replace('Dollar', '').isdigit()
+    if re.match(r'(\d+([.,]?)\d{0,}([.,]?)\d*(\s*)(\$|€|EUR|USD|Euro|Dollar))|((\$|€|EUR|USD|Euro|Dollar)(\s*)\d+([.,]?\d{0,}([.,]?)\d*))|((\s*)\d+([.,]?\d{0,}([.,]?)\d*))$', ocr_val):
         ocr_type = 'number'
         return True
     return False
