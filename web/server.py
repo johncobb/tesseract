@@ -11,7 +11,7 @@ from collections import defaultdict
 
 from flask_cors import CORS
 from parser_kia_tsv import parser, post_processing
-from parser_kia_json import processing
+from parser_kia_json import processsing
 import werkzeug
 from werkzeug import secure_filename
 import os
@@ -121,7 +121,7 @@ def uploads():
         # item.save(file_path)
         page_json = {
             "page": int(filename.split('-')[-1].split('.')[0]) + 1,
-            'rows': processing(item, pat=path, tsv=True)
+            'rows': parser(item, pat=path, tsv=True)
         }
         # os.remove(file_path)
         job_json['job']['pages'].append(page_json)
@@ -156,17 +156,18 @@ def upload():
     for item in uploaded_files:
         file_ext = item.filename.split('.')[-1]
         if file_ext.lower() == 'json':
-            page_json = {
-                'page': int(item.filename.split('-')[-1].split('.')[0]),
-                'rows': parser(item, tsv=True)
-            }
+            # page_json = {
+            #     'page': int(item.filename.split('-')[-1].split('.')[0]),
+            #     'rows': processing(item, tsv=True)
+            # }
+            job_json = processsing(item, is_json=True)
         elif file_ext.lower() == 'tsv':
             page_json = {
                 'page': int(item.filename.split('-')[-1].split('.')[0]),
                 'rows': parser(item, tsv=True)
             }
         # os.remove(os.path.join(path, item))
-        job_json['job']['pages'].append(page_json)
+            job_json['job']['pages'].append(page_json)
     
     response = json.dumps(job_json, indent=4)
     # Load an html page with a link to each uploaded file

@@ -3,6 +3,7 @@ import sys, os
 import getopt
 import json
 import re
+import io
 
 # path = ''
 inp = ''
@@ -62,18 +63,19 @@ def check_day(day, month, leap_year):
     elif month in monthlist['28'] and leap_year:
         return (True, 'Passed') if day >= 1 and day <= 29 else (False, 'Failed')
 
-def processsing(item, pat=None, json=False):
+def processsing(item, pat=None, is_json=False):
     global inp, out, kia
     
-    if json:
+    if is_json:
         item.seek(0)
-        json_data = json.load()
-    
-    try:
-        json_data = json.load(open(os.path.join(inp, 'job.json'), 'r'))
-    except json.JSONDecodeError as e:
-        print('Error: Couldn\'t load the JSON File')
-        sys.exit(1)
+        json_file = io.StringIO(item.read().decode())
+        json_data = json.load(json_file)
+    else:
+        try:
+            json_data = json.load(open(os.path.join(inp, 'job.json'), 'r'))
+        except json.JSONDecodeError as e:
+            print('Error: Couldn\'t load the JSON File')
+            sys.exit(1)
     job_data = json_data['job']
     post_processing_json = {
         'job': {
@@ -158,26 +160,5 @@ def processsing(item, pat=None, json=False):
             rows_json['rows'].append(cols_json)
         post_processing_json['job']['pages'].append(rows_json)
     
+    # return rows_json
     return post_processing_json
-
-
-
-# if __name__ == '__main__':
-    
-#     if not sys.argv[1]:
-#         print("Error: No arguments provided!")
-#         sys.exit(1)
-#     try:
-#         opts, args = getopt.getopt(sys.argv[1:], 'i:o:', ['--input', '--output'])
-#     except getopt.GetoptError as e:
-#         print("Error: Invalid arguments!")
-#         sys.exit(1)
-        
-#     argparsing(opts, args)
-    
-#     json_data = processsing()
-    
-#     with open(os.path.join(out, 'final.json'), 'w+') as json_file:
-#         json.dump(json_data, json_file, indent=4)
-        
-#     print('Sucessfully parsed the JSON file.')
