@@ -11,8 +11,8 @@ from collections import defaultdict
 
 from flask_cors import CORS
 
-from modules.parsers.parser_kia_json import processsing
-from modules.parsers.parser_kia_tsv import parser, post_processing
+from parsers.lenders.chase.post_proc import processsing
+from parsers.lenders.chase.parser import parser, post_processing
 
 # from parser_kia_tsv import parser, post_processing
 # from parser_kia_json import processsing
