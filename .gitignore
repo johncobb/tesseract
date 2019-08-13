@@ -21,3 +21,15 @@ __pycache__/
 .venv
 env/
 venv/
+
+out/
+jpeg/
+json/
+png/
+tiff/
+tsv/
+txt/
+.vscode/
+kiachase.json
+kia_chase.json
+ScheduleVINS.csv
