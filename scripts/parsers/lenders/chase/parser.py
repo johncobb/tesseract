@@ -1,6 +1,6 @@
 import csv, json, getopt
 import os,sys, time
-import parsers.util
+from parsers.util import ValidateVIN
 import re
 import werkzeug
 import io
@@ -174,7 +174,7 @@ def post_processing(json_data):
                 vin_footer_bbox = row['cols'][index_footer]['bbox']
                 
 
-                valid = util.ValidateVIN(vin)
+                valid = ValidateVIN(vin)
                 balance = row['cols'][index_balance]['val']
                 bal_bbox = row['cols'][index_balance]['bbox']
 

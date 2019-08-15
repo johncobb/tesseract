@@ -1,4 +1,4 @@
-from .parser_kia import Kia
+from parser_kia import Kia
 import sys, os
 import getopt
 import json
@@ -166,7 +166,7 @@ def runner():
     json_data = processsing(inp)
     
     with open(os.path.join(out, 'final.json'), 'w+') as json_file:
-        json.dump(json_data, json_file, indent=4)
+        json.dump(json_data, json_file, indent=2)
         
     print('Sucessfully parsed the JSON file.')
     
