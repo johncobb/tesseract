@@ -1,4 +1,5 @@
-from parser_kia import Kia
+from parsers.lenders.chase.parser_kia import Kia
+
 import sys, os
 import getopt
 import json
