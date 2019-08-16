@@ -6,11 +6,8 @@ import json
 import re
 import io
 
-# path = ''
 inp = ''
 out = ''
-# tid = ''
-# configid = ''
 kia = Kia()
 
 def argparsing(opts, args):
@@ -117,7 +114,6 @@ def processsing(item, pat=None, is_json=False):
                     if val.find('=') > -1:
                         val = val.replace('=', '')
                     first2 = val[0: 2]
-                    # result = date_regex(val)
                     year = val[-4:]
                     index = -1
                     if (year.find('/') > -1 or year.find('.') > -1 or year.find('-') > -1):
@@ -147,7 +143,6 @@ def processsing(item, pat=None, is_json=False):
             rows_json['rows'].append(cols_json)
         post_processing_json['job']['pages'].append(rows_json)
     
-    # return rows_json
     return post_processing_json
 
 def runner():
