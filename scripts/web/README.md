@@ -10,12 +10,12 @@
   [Installing Requirements](#req)
   [Usage](#use)
   [Endpoints](#end)
-  [Examples](#ex)
   [AWS S3](#s3)
   [Prepping for Zappa](#prepzap)
   [Setting up Zappa](#setupzap)
   [Deploying Zappa](#deployzap)
   [AWS API Gateway](#apigate)
+  [Examples](#ex)
 
 <div id='pre'>
 
