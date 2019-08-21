@@ -11,6 +11,7 @@
   [Usage](#use)
   [Endpoints](#end)
   [Examples](#ex)
+  [AWS S3](#s3)
 
 <div id='pre'>
 
@@ -78,3 +79,31 @@ Refer to test.py
 ```console
 curl http://0.0.0.0:3010/api/upload -F 'file=@path/to/file'
 ```
+
+<div id='s3'>
+
+### AWS S3
+Set up awscli pip package and follow the directions from the below command
+```console
+aws configure
+```
+
+Prepping for zappa
+See [Virtual Environment](#venv) to set up the virtual environment
+The recommended name for amazon s3 and the virtual environment set up is env as I found that to be most successful
+Once the virtual environment was activated run the below command
+Navigate to the scripts directory
+```console
+cd scripts
+```
+
+Zappa set up
+```console
+zappa init
+```
+When it gets to what's your app's function OR django settings enter in server.APP
+Make sure that zappa's aws region is set to an aws region (IE us-east-1 and NOT N. Virgiana)
+
+If zappa recognizes the project as django you'll need to go to the zappa_settings.json file and change a few things
+To change the it to a flask app change the django_settings to app_function
+Make sure that app_function is set to server.APP

@@ -1,32 +1,28 @@
+from flask import Flask, request, jsonify, render_template
+from flask_restful import reqparse
+from flask_cors import CORS
+
 from functools import wraps
 import json
 from six.moves.urllib.request import urlopen
 
-from flask import Flask, request, jsonify, render_template
-
-from os import environ as env
-from dotenv import load_dotenv, find_dotenv
+# from os import environ as env
+# from dotenv import load_dotenv, find_dotenv
 
 from collections import defaultdict
 
-from flask_cors import CORS
-
-from parsers.lenders.chase.post_proc import processsing
+from parsers.lenders.chase.post_proc import processing
 from parsers.lenders.chase.parser import parser, post_processing
 
-# from parser_kia_tsv import parser, post_processing
-# from parser_kia_json import processsing
-import werkzeug
-from werkzeug import secure_filename
+# import werkzeug
+# from werkzeug import secure_filename
 import os
 
-import calendar, time
+import calendar
 
-from flask_restful import reqparse
-
-ENV_FILE = find_dotenv()
-if ENV_FILE:
-    load_dotenv(ENV_FILE)
+# ENV_FILE = find_dotenv()
+# if ENV_FILE:
+#     load_dotenv(ENV_FILE)
 
 path = os.path.join(os.getcwd(), 'tsv')
 if not os.path.isdir(path):
@@ -109,7 +105,7 @@ def uploads():
             configid = int(configid)
     
     if configid == 1:
-        job_json['job']['configid'] = configid
+        job_json['job']['config_id'] = configid
         job_json['job']['id'] = transid
         job_json['job']['pages'] = []
     else:
@@ -122,60 +118,61 @@ def uploads():
     for item in request.files.getlist('file'):
         filename = secure_filename(item.filename)
         file_path = os.path.join(path, filename)
-        # item.save(file_path)
         page_json = {
             "page": int(filename.split('-')[-1].split('.')[0]) + 1,
             'rows': parser(item, pat=path, tsv=True)
         }
-        # os.remove(file_path)
         job_json['job']['pages'].append(page_json)
+    
+    job_json = processing(job_json, is_json=True)
     
     return jsonify(job_json)
 
-@APP.route('/')
-def index():
-    return render_template('index.html')
+# @APP.route('/')
+# def index():
+#     return render_template('index.html')
 
-@APP.route('/upload', methods=['POST'])
-def upload():
-    global path
-    cfg_id = request.form.get('version')
-    if cfg_id.isdigit():
-        cfg_id = int(cfg_id)
-    else:
-        return jsonify(message="Please make sure the version is a number.")
-    job_json = {
-        "job": {
-            "config_id": cfg_id,
-            "id": calendar.timegm(time.gmtime()),
-            'pages': []
-        }
-    }
-    # Get the name of the uploaded files
-    uploaded_files = request.files.getlist("file[]")
+# @APP.route('/upload', methods=['POST'])
+# def upload():
+#     global path
+#     cfg_id = request.form.get('version')
+#     if cfg_id.isdigit():
+#         cfg_id = int(cfg_id)
+#     else:
+#         return jsonify(message="Please make sure the version is a number.")
+#     job_json = {
+#         "job": {
+#             "config_id": cfg_id,
+#             "id": calendar.timegm(time.gmtime()),
+#             'pages': []
+#         }
+#     }
+#     # Get the name of the uploaded files
+#     uploaded_files = request.files.getlist("file[]")
     
-    if not uploaded_files[0].filename:
-        return jsonify(message='Please select files to upload!')
+#     if not uploaded_files[0].filename:
+#         return jsonify(message='Please select files to upload!')
     
-    for item in uploaded_files:
-        file_ext = item.filename.split('.')[-1]
-        if file_ext.lower() == 'json':
-            # page_json = {
-            #     'page': int(item.filename.split('-')[-1].split('.')[0]),
-            #     'rows': processing(item, tsv=True)
-            # }
-            job_json = processsing(item, is_json=True)
-        elif file_ext.lower() == 'tsv':
-            page_json = {
-                'page': int(item.filename.split('-')[-1].split('.')[0]),
-                'rows': parser(item, tsv=True)
-            }
-            job_json['job']['pages'].append(page_json)
+#     for item in uploaded_files:
+#         file_ext = item.filename.split('.')[-1]
+#         if file_ext.lower() == 'json':
+#             # page_json = {
+#             #     'page': int(item.filename.split('-')[-1].split('.')[0]),
+#             #     'rows': processing(item, tsv=True)
+#             # }
+#             job_json = processsing(item, is_json=True)
+#         elif file_ext.lower() == 'tsv':
+#             page_json = {
+#                 'page': int(item.filename.split('-')[-1].split('.')[0]),
+#                 'rows': parser(item, tsv=True)
+#             }
+#             job_json['job']['pages'].append(page_json)
     
-    response = json.dumps(job_json, indent=4)
-    # Load an html page with a link to each uploaded file
-    return render_template('upload.html', response=response)
-
+#     response = json.dumps(job_json, indent=4)
+#     # Load an html page with a link to each uploaded file
+#     return render_template('upload.html', response=response)
 
 if __name__ == "__main__":
-    APP.run(host=env.get("IP", "0.0.0.0"), port=env.get("PORT", 3010), debug=True)
+    # APP.run(host=env.get("IP", "0.0.0.0"), port=env.get("PORT", 3010))
+    
+    APP.run()

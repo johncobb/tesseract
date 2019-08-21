@@ -61,13 +61,14 @@ def check_day(day, month, leap_year):
     elif month in monthlist['28'] and leap_year:
         return (True, 'Passed') if day >= 1 and day <= 29 else (False, 'Failed')
 
-def processsing(item, pat=None, is_json=False):
+def processing(item, pat=None, is_json=False):
     global inp, out, kia
     
     if is_json:
-        item.seek(0)
-        json_file = io.StringIO(item.read().decode())
-        json_data = json.load(json_file)
+        # item.seek(0)
+        # json_file = io.StringIO(item.read().decode())
+        # json_data = json.load(json_file)
+        json_data = item
     else:
         try:
             json_data = json.load(open(os.path.join(inp, 'job.json'), 'r'))
