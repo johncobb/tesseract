@@ -111,9 +111,9 @@ def uploads():
     else:
         return jsonify(message='Please enter a valid config id.')
     
-    path = os.path.join(os.getcwd(), 'tsv')
-    if not os.path.isdir(path):
-        os.mkdir(path)
+    # path = os.path.join(os.getcwd(), 'tsv')
+    # if not os.path.isdir(path):
+    #     os.mkdir(path)
     
     for item in request.files.getlist('file'):
         filename = secure_filename(item.filename)
