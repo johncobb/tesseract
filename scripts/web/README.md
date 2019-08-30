@@ -103,7 +103,7 @@ zappa init
 
 - If zappa recognizes the project as django you'll need to go to the zappa_settings.json file and change a few things
 - To change the it to a flask app change the django_settings to app_function
-- Make sure that app_function is set to server.APP
+- Make sure that app_function is set to web.server.APP OR server.APP depending on how you have it set up
 
 <div id='deployzap'>
 

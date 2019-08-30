@@ -11,8 +11,22 @@ from six.moves.urllib.request import urlopen
 
 from collections import defaultdict
 
-from parsers.lenders.chase.post_proc import processing
-from parsers.lenders.chase.parser import parser, post_processing
+import os, sys
+
+try:
+    from parsers.lenders.chase.post_proc import processing
+    from parsers.lenders.chase.parser import parser, post_processing
+except ModuleNotFoundError:
+    try:
+        from ..parsers.lenders.chase.post_proc import processing
+        from ..parsers.lenders.chase.parser import parser, post_processing
+    except ValueError:
+        os.chdir('..')
+        sys.path.append(os.getcwd())
+        sys.path.remove(os.path.join(os.getcwd(), 'web'))
+        os.chdir('./web')
+        from parsers.lenders.chase.post_proc import processing
+    from parsers.lenders.chase.parser import parser, post_processing
 
 from werkzeug import secure_filename
 import os
@@ -79,11 +93,13 @@ def uploads():
     parse = reqparse.RequestParser()
     parse.add_argument('configid')
     parse.add_argument('id', required=True, type=int, help='I\'m sorry but the attribute "id" is required and must be an int.')
-    
+    parse.add_argument('values', action='append', required=True)
+
     args = parse.parse_args()
     
     configid = args['configid']
     transid = args['id']
+    values = args['values']
     
     if not configid:
         configid = "latest"
@@ -116,13 +132,16 @@ def uploads():
     
     for item in request.files.getlist('file'):
         filename = secure_filename(item.filename)
-        file_path = os.path.join(path, filename)
+        print(int(filename.split('-')[-1].split('.')[0]) + 1)
+        if not filename.split('-')[-1].split('.')[0].isdigit:
+            continue
         page_json = {
             "page": int(filename.split('-')[-1].split('.')[0]) + 1,
-            'rows': parser(item, pat=path, tsv=True)
+            'rows': parser(item, values, pat=path, tsv=True)
         }
         job_json['job']['pages'].append(page_json)
-    
+    job_json = post_processing(job_json, values)
+
     job_json = processing(job_json, is_json=True)
     
     return jsonify(job_json)
@@ -174,4 +193,4 @@ def uploads():
 if __name__ == "__main__":
     # APP.run(host=env.get("IP", "0.0.0.0"), port=env.get("PORT", 3010))
     
-    APP.run()
+    APP.run(debug=True)

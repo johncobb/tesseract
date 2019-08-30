@@ -30,18 +30,23 @@ job_id = 1561780205
 ocr_type = "text"
 ocr_val = ""
 
-
 def task1(ocr_val):
     global ocr_type
+    illegal_chars = ['I', 'O', 'Q']
+    for item in ocr_val:
+        if item.upper() in illegal_chars:
+            return False
     if len(ocr_val) == 11:
         ocr_type = "text"
         return True
+    return False
 
 def task2(ocr_val):
     global ocr_type
     if len(ocr_val) == 6 and ocr_val.isdigit():
         ocr_type = "text"
         return True
+    return False
 
 def task3(ocr_val):
     global ocr_type
@@ -49,26 +54,23 @@ def task3(ocr_val):
     if re.match(r'^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*\.[0-9]{2}', ocr_val):
         ocr_type = 'number'
         return True
-    else:
-        return False
+    return False
     
 def task4(ocr_val):
     global ocr_type
     if re.match(r"^((((0[13578])|([13578])|(1[02]))[\/](([1-9])|([0-2][0-9])|(3[01])))|(((0[469])|([469])|(11))[\/](([1-9])|([0-2][0-9])|(30)))|((2|02)[\/](([1-9])|([0-2][0-9]))))[\/]\d{4}$|^\d{4}$", ocr_val):
         ocr_type = 'date'
         return True
-    else:
-        return False
+    return False
+
+def dummy_task(ocr_val):
+    return False
 
 # reference to index of function being called
 fnc_index = 0
 
 # fmap stores references to task functions and their results
-fmap = {0: [task1, 0],
-    1: [task2, 0],
-    2: [task3, 0],
-    3: [task4, 0],
-    4: 0}
+fmap = {}
 
 def build_sample_output():
 
@@ -144,7 +146,7 @@ def build_page_list():
     for pagenum in pagenum_list:
         filename_list.append(filename_prefix + "-" + pagenum + filename_ext)
 
-def post_processing(json_data):
+def post_processing(json_data, values):
     global job_id, cfg_id
     prev_val = ""
     new_json = {
@@ -157,10 +159,30 @@ def post_processing(json_data):
     ocr_rows = []
     ocr_pages = []
 
-    index_header = 0
-    index_footer = 1
-    index_date = 2
-    index_balance = 3
+    if 'vin' in values and 'date' in values and 'balance' in values:
+
+        index_header = 0
+        index_footer = 1
+        index_date = 2
+        index_balance = 3
+    elif 'vin' in values and 'date' in values:
+        index_header = 0
+        index_footer = 1
+        index_date = 2
+    elif 'vin' in values and 'balance' in values:
+        index_header = 0
+        index_footer = 1
+        index_balance = 2
+    elif 'date' in values and 'balance' in values:
+        index_date = 0
+        index_balance = 1
+    elif 'vin' in values:
+        index_header = 0
+        index_footer = 1
+    elif 'date' in values:
+        index_date = 0
+    elif 'balance' in values:
+        index_balance = 0
 
     for page in json_data['job']['pages']:
 
@@ -168,60 +190,63 @@ def post_processing(json_data):
             conf = []
             # if len(row['cols']) > 2 and len(row['cols']) < 5:
             if len(row['cols']) == 4:
-
-                vin = row['cols'][index_header]['val'] + row['cols'][index_footer]['val']
-                vin_header_bbox = row['cols'][index_header]['bbox']
-                vin_footer_bbox = row['cols'][index_footer]['bbox']
                 
-
-                valid = ValidateVIN(vin)
-                balance = row['cols'][index_balance]['val']
-                bal_bbox = row['cols'][index_balance]['bbox']
-
-                conf.append(row['cols'][index_header]['conf'])
-                conf.append(row['cols'][index_footer]['conf'])
-                bal_conf = row['cols'][index_balance]['conf']
-
-                vin_attr = valid[0]
                 bal_attr = row['cols'][index_balance]['attr']
-                
-                date = row['cols'][index_date]['val']
-                date_bbox = row['cols'][index_date]['bbox']
-                date_conf = row['cols'][index_date]['conf']
-                date_attr = row['cols'][index_date]['attr']
 
-                ocr_col = {
-                    'type': 'text',
-                    'val': vin,
-                    'bbox': [vin_header_bbox, vin_footer_bbox],
-                    'conf': conf,
-                    'attr': vin_attr
-                }
                 
-                ocr_col2 = {
-                    'type': 'date',
-                    'val': date,
-                    'bbox': [date_bbox],
-                    'conf': [date_conf],
-                    'attr': date_attr
-                }
+                if 'vin' in values:
+                    conf.append(row['cols'][index_header]['conf'])
+                    conf.append(row['cols'][index_footer]['conf'])
 
-                ocr_col3 = {
-                    'type': 'number',
-                    'val': balance,
-                    'bbox': [bal_bbox],
-                    'conf': [bal_conf],
-                    'attr': bal_attr
-                }
+                    vin = row['cols'][index_header]['val'] + row['cols'][index_footer]['val']
+                    vin_header_bbox = row['cols'][index_header]['bbox']
+                    vin_footer_bbox = row['cols'][index_footer]['bbox']
+                    
+                    valid = ValidateVIN(vin)
+                    vin_attr = valid[0]
 
-                ocr_cols.append(ocr_col)
-                ocr_cols.append(ocr_col2)
-                ocr_cols.append(ocr_col3)
-                # if len(row['cols']) == 4:
+                    ocr_col = {
+                        'type': 'text',
+                        'val': vin,
+                        'bbox': [vin_header_bbox, vin_footer_bbox],
+                        'conf': conf,
+                        'attr': vin_attr
+                    }
+
+                    ocr_cols.append(ocr_col)
+                    ocr_col = {}
                 
-                
-                ocr_col = {}
-                ocr_col2 = {}
+                if 'date' in values:
+
+                    date = row['cols'][index_date]['val']
+                    date_bbox = row['cols'][index_date]['bbox']
+                    date_conf = row['cols'][index_date]['conf']
+                    date_attr = row['cols'][index_date]['attr']
+                    ocr_col2 = {
+                        'type': 'date',
+                        'val': date,
+                        'bbox': [date_bbox],
+                        'conf': [date_conf],
+                        'attr': date_attr
+                    }
+
+                    ocr_cols.append(ocr_col2)
+                    ocr_col2 = {}
+
+                if 'balance' in values:
+                    bal_conf = row['cols'][index_balance]['conf']
+                    balance = row['cols'][index_balance]['val']
+                    bal_bbox = row['cols'][index_balance]['bbox']
+
+                    ocr_col3 = {
+                        'type': 'number',
+                        'val': balance,
+                        'bbox': [bal_bbox],
+                        'conf': [bal_conf],
+                        'attr': bal_attr
+                    }
+
+                    ocr_cols.append(ocr_col3)
 
                 if not ocr_cols:
                     continue
@@ -242,13 +267,25 @@ def post_processing(json_data):
     new_json['job']['pages'] = ocr_pages
     return new_json
 
-def parser(item, pat=None, tsv=False):
+def parser(item, values, pat=None, tsv=False):
     global inpath, path, fnc_index, job_id, pagenum_list, filename_list
      # parse the page number
      
     if path:
         inpath = pat
     
+    if 'vin' in values:
+        fmap[0] = [task1, 0]
+        fmap[1] = [task2, 0]
+        fmap[2] = [dummy_task, 0]
+        fmap[3] = [dummy_task, 0]
+        fmap[4] = 0
+    if 'balance' in values:
+        fmap[2] = [task3, 0]
+        fmap[3] = [dummy_task, 0]
+    if 'date' in values:
+        fmap[3] = [task4, 0]
+
     ocr_rows = []
     ocr_cols = []
     ocr_val = ""
@@ -278,8 +315,16 @@ def parser(item, pat=None, tsv=False):
         ocr_conf = int(row['conf'])
 
         # call the current function and store the result
-        fmap[fnc_index][1] = fmap[fnc_index][0](ocr_val)
-
+        # if isinstance(fmap[fnc_index], int):
+        #     fnc_index = 0
+        #     continue
+        # print(ocr_val, ' is ocr_val')
+        # print(fnc_index, ' is fnc_index')
+        try:
+            fmap[fnc_index][1] = fmap[fnc_index][0](ocr_val)
+        except TypeError:
+            print(fnc_index)
+            print(ocr_val)
         # json template for local storage
         ocr_json = {
             "type": ocr_type,
@@ -288,27 +333,24 @@ def parser(item, pat=None, tsv=False):
             "conf": ocr_conf,
             "attr": False
         }
-        
+        if fnc_index == 2 and not fmap[fnc_index][1]:
+            print(ocr_val, ' is ocr_val')
         # if function was successful append the ocr json to column
         if fmap[fnc_index][1]:        
             ocr_json['attr'] = True
-            if ocr_val.find('=') > -1:
-                print(ocr_val)
+            # if ocr_val.find('=') > -1:
+            #     print(ocr_val)
             ocr_cols.append(ocr_json)                
             fnc_index += 1
         else:
             if fmap[0][1] and fmap[1][1] and fnc_index == 2 and len(ocr_val) > 5 and len(ocr_val) < 12:
-                # num1 = ocr_val[0:2]
-                # print(num1)
-                # print(type(num1))
-                # print(num1.isdigit())
                 if ocr_val.find('/') > -1 or ocr_val.find('-') > -1 or ocr_val.count('.') == 2:
                     ocr_json['attr'] = False
                     ocr_json['type'] = 'date'
                     fmap[fnc_index][1] = True
                     ocr_cols.append(ocr_json)
                     fnc_index += 1
-            elif fmap[2][1] and fnc_index == 3:
+            if fmap[2][1] and fnc_index == 3:
                 found_ds = ocr_val.find('$')
                 found_pe = ocr_val.find('.')
                 found_co = ocr_val.find(',')
@@ -326,8 +368,6 @@ def parser(item, pat=None, tsv=False):
                     ocr_cols.append(ocr_json)
                     fnc_index += 1
 
-        # print(json.dumps(ocr_cols, indent=2))
-
         # check to see if all functions have completed
         if (fmap[0][1] and fmap[1][1] and fmap[2][1] and fmap[3][1]):
             # we found all the parts so add columns to row
@@ -338,10 +378,17 @@ def parser(item, pat=None, tsv=False):
             # append the ocr column data to row
             ocr_rows.append(rows_json)
             fnc_index = 0
-            fmap[0][1] = 0
-            fmap[1][1] = 0
-            fmap[2][1] = 0
-            fmap[3][1] = 0
+
+            if 'vin' in values:
+                fmap[0][1] = 0
+                fmap[1][1] = 0
+            
+            if 'date' in values:
+                fmap[2][1] = 0
+            
+            if 'balance' in values:
+                fmap[3][1] = 0
+
             ocr_cols = []
 
     return ocr_rows
@@ -363,13 +410,13 @@ def runner(patharg, inp, tid, configid):
     ocr_cols = []
     ocr_rows = []
     ocr_pages = []
-
+    values = ['date', 'balance', 'vin']
     # filename_list = ['result-004.tsv', 'result-006.tsv']
 
     # for each file in the directory
     for item in filename_list:
         pagenum = int(item.split('.')[0].split('-')[-1])
-        rows = parser(item)
+        rows = parser(item, values)
         pages_json = {
             "page": pagenum + 1,
             "rows": rows
@@ -383,9 +430,7 @@ def runner(patharg, inp, tid, configid):
             "pages": ocr_pages
         }
     }
-    # print(json.dumps(job_json, indent=2))
-    # sys.exit()
     
-    job_json = post_processing(job_json)
+    job_json = post_processing(job_json, values)
     print("processing completed successfully")
     return job_json

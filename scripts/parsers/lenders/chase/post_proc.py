@@ -10,6 +10,12 @@ inp = ''
 out = ''
 kia = Kia()
 
+class YearException(Exception):
+
+    def __init__(self, expression, message):
+        self.expression = expression
+        self.message = message
+
 def argparsing(opts, args):
     global inp, out
     for opt, arg in opts:
@@ -61,9 +67,16 @@ def check_day(day, month, leap_year):
     elif month in monthlist['28'] and leap_year:
         return (True, 'Passed') if day >= 1 and day <= 29 else (False, 'Failed')
 
+def removechars(string):
+    strl = []
+    for item in string:
+        if item.isdigit():
+            strl.append(item)
+
+    return ''.join(strl)
+
 def processing(item, pat=None, is_json=False):
     global inp, out, kia
-    
     if is_json:
         # item.seek(0)
         # json_file = io.StringIO(item.read().decode())
@@ -73,8 +86,9 @@ def processing(item, pat=None, is_json=False):
         try:
             json_data = json.load(open(os.path.join(inp, 'job.json'), 'r'))
         except json.JSONDecodeError as e:
-            print('Error: Couldn\'t load the JSON File')
-            sys.exit(1)
+            raise e
+            # print('Error: Couldn\'t load the JSON File')
+            # sys.exit(1)
     job_data = json_data['job']
     post_processing_json = {
         'job': {
@@ -114,7 +128,6 @@ def processing(item, pat=None, is_json=False):
                 elif col['type'] == 'date':
                     if val.find('=') > -1:
                         val = val.replace('=', '')
-                    first2 = val[0: 2]
                     year = val[-4:]
                     index = -1
                     if (year.find('/') > -1 or year.find('.') > -1 or year.find('-') > -1):
@@ -126,11 +139,18 @@ def processing(item, pat=None, is_json=False):
                                 index = 0
                                 
                     if not len(year[index:]) >= 1 and not len(year[index:]) <= 4:
-                        print('Error: Invalid Year')
-                        sys.exit(1)
+                        raise YearException(year, 'Invalid Year')
+                        # print('Error: Invalid Year')
+                        # sys.exit(1)
                         
                     is_leap_year = check_leap_year(int(year[index:]))
-                    date_check = check_day(int(val[3:5]), int(val[0:2]), is_leap_year)
+                    day = val[3:5]
+                    month = val[0:2]
+                    if not day.isdigit():
+                        day = removechars(day)
+                    if not month.isdigit():
+                        month = removechars(month)
+                    date_check = check_day(int(day), int(month), is_leap_year)
                     
                     if date_check[0]:
                             # if len(year[index:]) >= 1 and len(year[index:]) <= 4:
@@ -150,17 +170,19 @@ def runner():
     global inp, out
     
     if not sys.argv[1]:
-        print("Error: No arguments provided!")
-        sys.exit(1)
+        raise Exception('No Arguments Provided!')
+        # print("Error: No arguments provided!")
+        # sys.exit(1)
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'i:o:', ['--input', '--output'])
     except getopt.GetoptError as e:
-        print("Error: Invalid arguments!")
-        sys.exit(1)
+        raise e
+        # print("Error: Invalid arguments!")
+        # sys.exit(1)
         
     argparsing(opts, args)
     
-    json_data = processsing(inp)
+    json_data = processing(inp)
     
     with open(os.path.join(out, 'final.json'), 'w+') as json_file:
         json.dump(json_data, json_file, indent=2)
